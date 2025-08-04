@@ -4,6 +4,8 @@ import android.content.Context
 import android.text.InputType
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.FrameLayout
 import androidx.core.content.res.use
@@ -46,6 +48,8 @@ class DropdownMenu(
         }
         get() = binding.autoCompleteTextView.inputType != InputType.TYPE_NULL
 
+    var onItemClick: ((Int) -> Unit)? = null
+
     override fun setEnabled(enabled: Boolean) {
         binding.textInputLayout.isEnabled = enabled
     }
@@ -69,5 +73,9 @@ class DropdownMenu(
         }
 
         adapter = ArrayAdapter(context, R.layout.dropdown_item)
+
+        binding.autoCompleteTextView.setOnItemClickListener {_, _, position, _ ->
+            onItemClick?.invoke(position)
+        }
     }
 }
