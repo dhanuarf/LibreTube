@@ -56,7 +56,7 @@ class AddToPlaylistDialog : DialogFragment() {
             binding.playlistsSpinner.items =
                 playlists
                     .mapNotNull { it.name }
-                    .ifEmpty{ listOf<String>("") }
+                    .ifEmpty { listOf("") }
 
             // disable the spinner and the 'Add' button when there is no available playlist
             binding.playlistsSpinner.isEnabled = playlists.isNotEmpty()
@@ -66,7 +66,7 @@ class AddToPlaylistDialog : DialogFragment() {
             lastSelectedPlaylistId?.let { id ->
                 // check if the list is empty, it's possible that the user just deleted
                 // all playlists and 'lastSelectedPlaylist' still has value
-                if(playlists.isEmpty())return@let
+                if (playlists.isEmpty()) return@let
 
                 binding.playlistsSpinner.selectedItemPosition = playlists
                     .indexOfFirst { it.id == id }
@@ -75,7 +75,8 @@ class AddToPlaylistDialog : DialogFragment() {
 
             msg?.let {
                 with(binding.root.context) {
-                    Toast.makeText(this, getString(it.resId, it.formatArgs), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(it.resId, it.formatArgs), Toast.LENGTH_SHORT)
+                        .show()
                 }
                 viewModel.onMessageShown()
             }
