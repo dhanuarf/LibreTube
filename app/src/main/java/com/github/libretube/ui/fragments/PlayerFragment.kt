@@ -590,6 +590,10 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
                 if (NavBarHelper.hasTabs()) {
                     mainMotionLayout.progress = abs(progress)
                 }
+
+                val hideAnimationAlpha = 1.0f - (progress * 5.0f).coerceAtMost(1.0f)
+                playerBackgroundBinding.sbSkipBtn.alpha = hideAnimationAlpha
+                playerBackgroundBinding.createSegmentContainer.alpha = hideAnimationAlpha
                 disableController()
                 commonPlayerViewModel.setSheetExpand(false)
                 transitionEndId = endId

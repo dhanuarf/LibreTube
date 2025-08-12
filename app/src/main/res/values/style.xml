@@ -230,4 +230,10 @@
         <item name="android:padding">5dp</item>
     </style>
 
+    <style name="SponsorBlockSegmentButton">
+        <item name="android:layout_width">@dimen/sb_create_segment_button_size</item>
+        <item name="android:layout_height">@dimen/sb_create_segment_button_size</item>
+        <item name="android:layout_marginStart">@dimen/sb_create_segment_button_margin_size</item>
+        <item name="tint">@android:color/white</item>
+    </style>
 </resources>

@@ -7,7 +7,9 @@ import android.os.Looper
 import android.text.format.DateUtils
 import android.util.AttributeSet
 import android.view.Window
+import android.widget.Toast
 import androidx.core.os.bundleOf
+import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.LifecycleOwner
@@ -19,6 +21,7 @@ import com.github.libretube.R
 import com.github.libretube.constants.IntentData
 import com.github.libretube.constants.PreferenceKeys
 import com.github.libretube.enums.PlayerCommand
+import com.github.libretube.extensions.seekBy
 import com.github.libretube.extensions.toID
 import com.github.libretube.helpers.PlayerHelper
 import com.github.libretube.helpers.PreferenceHelper
@@ -31,6 +34,7 @@ import com.github.libretube.ui.interfaces.OnlinePlayerOptions
 import com.github.libretube.ui.models.CommonPlayerViewModel
 import com.github.libretube.ui.models.PlayerViewModel
 import com.github.libretube.util.PlayingQueue
+import kotlin.io.path.Path
 
 @UnstableApi
 class OnlinePlayerView(
@@ -89,7 +93,14 @@ class OnlinePlayerView(
                     }
                 )
     }
+    var isSponsorBlockSubmissionMenuOpened = false
+    fun openSponsorBlockSubmissionMenu(open: Boolean){
+        backgroundBinding.createSegmentContainer.isGone = !open
+        isSponsorBlockSubmissionMenuOpened = open
+    }
+    fun closeSponsorBlockSubmissionMenu(){
 
+    }
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     private fun getCurrentResolutionSummary(): String {
         val currentQuality = player?.videoSize?.height ?: 0
@@ -180,15 +191,23 @@ class OnlinePlayerView(
             )
             updateSbImageResource()
         }
-
+        with(backgroundBinding){
+            sbSegmentSetTimeButton.setOnClickListener { Toast.makeText(context, "settime", Toast.LENGTH_SHORT).show() }
+            sbSegmentFineBackwardButton.setOnClickListener { player?.seekBy(-100) }
+            sbSegmentFineForwardButton.setOnClickListener { player?.seekBy(100) }
+            sbSegmentSubmitButton.setOnClickListener {
+                val submitSegmentDialog = SubmitSegmentDialog()
+                submitSegmentDialog.arguments = buildSbBundleArgs() ?: return@setOnClickListener
+                submitSegmentDialog.show((context as BaseActivity).supportFragmentManager, null)
+            }
+            sbSegmentCloseButton.setOnClickListener { openSponsorBlockSubmissionMenu(false) }
+        }
         syncQueueButtons()
 
         binding.sbSubmit.isVisible =
             PreferenceHelper.getBoolean(PreferenceKeys.CONTRIBUTE_TO_SB, false)
         binding.sbSubmit.setOnClickListener {
-            val submitSegmentDialog = SubmitSegmentDialog()
-            submitSegmentDialog.arguments = buildSbBundleArgs() ?: return@setOnClickListener
-            submitSegmentDialog.show((context as BaseActivity).supportFragmentManager, null)
+            openSponsorBlockSubmissionMenu(!isSponsorBlockSubmissionMenuOpened)
         }
 
         binding.dearrowSubmit.isVisible =

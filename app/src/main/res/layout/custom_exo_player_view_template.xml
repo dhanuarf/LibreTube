@@ -68,7 +68,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-
     <com.github.libretube.ui.views.DoubleTapOverlay
         android:id="@+id/doubleTapOverlay"
         android:layout_width="match_parent"
@@ -82,6 +81,142 @@
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:gravity="center" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_marginStart="2dp"
+        android:id="@+id/create_segment_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|start"
+        android:visibility="gone"
+        app:cardBackgroundColor="#88000000"
+        app:strokeWidth="1dp"
+        app:contentPadding="6dp"
+        >
+
+
+<!--            <com.google.android.material.button.MaterialButton-->
+<!--                app:iconGravity="textEnd"-->
+<!--                android:id="@+id/end_time_text"-->
+<!--                style="@style/Widget.Material3.Button.TextButton.Icon"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:paddingHorizontal="8dp"-->
+<!--                android:src="@drawable/ic_add"-->
+<!--                app:icon="@drawable/ic_pinned"-->
+<!--                app:iconSize="18dp"-->
+<!--                android:padding="0dp"-->
+<!--                android:text="20:33.200"/>-->
+<!--            <TextView-->
+<!--                android:paddingHorizontal="8dp"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:paddingLeft="0dp"-->
+<!--                android:text="End time"/>-->
+
+<!--            <com.google.android.material.button.MaterialButton-->
+<!--                app:rippleColor="?colorPrimaryContainer"-->
+<!--                style="@style/Widget.Material3.Button.TextButton.Icon"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:paddingHorizontal="8dp"-->
+<!--                app:icon="@drawable/ic_pinned"-->
+<!--                app:iconGravity="textEnd"-->
+<!--                android:padding="0dp"-->
+<!--                app:iconSize="18dp"-->
+<!--                android:text=""/>-->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <ImageView
+                    style="@style/SponsorBlockSegmentButton"
+                    android:id="@+id/sb_segment_set_time_button"
+                    android:src="@drawable/ic_time_outlined"
+                    app:tint="?colorControlActivated"
+                    android:contentDescription=""
+                    android:tooltipText=""/>
+                <TextView
+                    android:textColor="?colorControlActivated"
+                    android:paddingHorizontal="8dp"
+                    android:id="@+id/start_time_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="20:33.200 - 50:99.113"/>
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical|end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <ImageView
+                    style="@style/SponsorBlockSegmentButton"
+                    android:id="@+id/sb_segment_fine_backward_button"
+                    android:src="@drawable/ic_skip"
+                    android:rotation="180"
+                    android:contentDescription=""
+                    android:tooltipText=""
+                    />
+                <ImageView
+                    style="@style/SponsorBlockSegmentButton"
+                    android:id="@+id/sb_segment_fine_forward_button"
+                    android:src="@drawable/ic_skip"
+                    android:contentDescription=""
+                    android:tooltipText=""
+                    />
+<!--                <ImageView-->
+<!--                    android:layout_marginStart="@dimen/sb_create_segment_button_margin_size"-->
+<!--                    android:layout_width="@dimen/sb_create_segment_button_size"-->
+<!--                    android:layout_height="@dimen/sb_create_segment_button_size"-->
+<!--                    android:src="@drawable/ic_edit"-->
+<!--                    app:tint="?colorControlActivated"/>-->
+                <ImageView
+                    style="@style/SponsorBlockSegmentButton"
+                    android:id="@+id/sb_segment_submit_button"
+                    android:src="@drawable/ic_upload_segment"
+                    android:rotation="0"
+                    android:contentDescription=""
+                    android:tooltipText=""/>
+                <ImageView
+                    style="@style/SponsorBlockSegmentButton"
+                    android:id="@+id/sb_segment_close_button"
+                    android:src="@drawable/ic_close"
+                    android:rotation="0"
+                    android:contentDescription=""
+                    android:tooltipText=""/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+            </LinearLayout>
+
+
+
+<!--            <com.google.android.material.textfield.TextInputLayout-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                app:hintEnabled="false"-->
+<!--                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"-->
+<!--                >-->
+<!--                <com.google.android.material.textfield.TextInputEditText-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:inputType="time"/>-->
+<!--            </com.google.android.material.textfield.TextInputLayout>-->
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="wrap_content"
