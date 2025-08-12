@@ -215,7 +215,7 @@ class OnlinePlayerView(
                 var playerPosition = playerCurrentPosition
                 // make sure the start time is not more than the end time
                 if (newSegmentStartAndEndTime.second != Long.MIN_VALUE) {
-                    playerPosition.coerceAtMost(newSegmentStartAndEndTime.second)
+                    playerPosition = playerPosition.coerceAtMost(newSegmentStartAndEndTime.second)
                 }
 
                 // remove leading hours if video duration is less than an hour
@@ -235,8 +235,8 @@ class OnlinePlayerView(
                 var playerPosition = playerCurrentPosition
 
                 // make sure the end time is not less than the start time
-                if (newSegmentStartAndEndTime.second != Long.MIN_VALUE) {
-                    playerPosition.coerceAtMost(newSegmentStartAndEndTime.second)
+                if (newSegmentStartAndEndTime.first != Long.MAX_VALUE) {
+                    playerPosition = playerPosition.coerceAtLeast(newSegmentStartAndEndTime.first)
                 }
 
                 // remove leading hours if video duration is less than an hour
@@ -291,8 +291,8 @@ class OnlinePlayerView(
     }
 
     private fun buildSbBundleArgs(isDeArrow: Boolean): Bundle? {
-        val currentPosition = player?.currentPosition?.takeIf { it != C.TIME_UNSET } ?: 0
-        val duration = player?.duration?.takeIf { it != C.TIME_UNSET }
+        val currentPosition = playerCurrentPosition
+        val duration = playerDuration
         val videoId = PlayingQueue.getCurrent()?.url?.toID() ?: return null
 
         if (isDeArrow) {
