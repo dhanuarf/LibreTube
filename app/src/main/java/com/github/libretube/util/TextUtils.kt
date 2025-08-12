@@ -1,5 +1,6 @@
 package com.github.libretube.util
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.icu.text.RelativeDateTimeFormatter
 import android.net.Uri
@@ -17,6 +18,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlinx.datetime.LocalDate as KotlinLocalDate
 
@@ -50,6 +52,31 @@ object TextUtils {
     }
 
     /**
+     * Get time in HH:mm:ss.SSS format from milliseconds
+     */
+    @SuppressLint("DefaultLocale")
+    fun Long.formatMillisecondsToString(removeHoursIfZero: Boolean): String {
+        var milliseconds = this
+        val hours = TimeUnit.MILLISECONDS.toHours(milliseconds)
+        milliseconds -= (hours * DateUtils.HOUR_IN_MILLIS)
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
+        milliseconds -= (minutes * DateUtils.MINUTE_IN_MILLIS)
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds)
+        milliseconds -= (seconds * DateUtils.SECOND_IN_MILLIS)
+
+        val result = StringBuilder().apply {
+            val removeHours = hours == 0L && removeHoursIfZero
+            if(!removeHours)append(String.format("%02d:", hours))
+
+            append(String.format("%02d:", minutes))
+            append(String.format("%02d.", seconds))
+            append(String.format("%03d", milliseconds))
+        }
+
+        return result.toString()
+    }
+
+    /**
      * Get time in seconds from a YouTube video link.
      * @return Time in seconds
      */
@@ -61,6 +88,8 @@ object TextUtils {
         if (timeString.isDigitsOnly()) return timeString.toLongOrNull()?.toFloat()
 
         if (timeString.all { it.isDigit() || ",.:".contains(it) }) {
+            var inHours = true
+
             var secondsTotal = 0
             var secondsScoped = 0
 
@@ -79,6 +108,12 @@ object TextUtils {
                     secondsScoped *= 10
                     secondsScoped += char.digitToInt()
                 } else if (char == ':') {
+                    if(inHours){
+                        secondsTotal += secondsScoped * 60 * 60
+                        secondsScoped = 0
+                        inHours = false
+                        continue
+                    }
                     secondsTotal += secondsScoped * 60
                     secondsScoped = 0
                 } else if (",.".contains(char)) {

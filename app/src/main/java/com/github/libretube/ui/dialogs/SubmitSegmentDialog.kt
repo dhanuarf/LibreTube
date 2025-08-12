@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.text.format.DateUtils
 import android.util.Log
 import android.widget.Toast
+import androidx.collection.LongLongPair
 import androidx.core.view.isGone
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
@@ -18,6 +19,7 @@ import com.github.libretube.extensions.TAG
 import com.github.libretube.extensions.toastFromMainDispatcher
 import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.util.TextUtils
+import com.github.libretube.util.TextUtils.formatMillisecondsToString
 import com.github.libretube.util.TextUtils.parseDurationString
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +31,7 @@ class SubmitSegmentDialog : DialogFragment() {
     private var currentPosition: Long = 0
     private var duration: Long? = null
     private var segments: List<Segment> = emptyList()
+    private var startAndEndTime: LongLongPair? = null
 
     private var _binding: DialogSubmitSegmentBinding? = null
     private val binding: DialogSubmitSegmentBinding get() = _binding!!
@@ -39,6 +42,9 @@ class SubmitSegmentDialog : DialogFragment() {
             videoId = it.getString(IntentData.videoId)!!
             currentPosition = it.getLong(IntentData.currentPosition)
             duration = it.getLong(IntentData.duration)
+
+            val longArray = it.getLongArray(IntentData.newSegmentsStartAndEndTime)!!
+            startAndEndTime = LongLongPair(longArray[0], longArray[1])
         }
     }
 
@@ -51,8 +57,8 @@ class SubmitSegmentDialog : DialogFragment() {
         binding.voteSegment.setOnClickListener {
             lifecycleScope.launch { voteForSegment() }
         }
-
-        binding.startTime.setText(DateUtils.formatElapsedTime(((currentPosition.toFloat() / 1000).toLong())))
+        binding.startTime.setText(startAndEndTime!!.first.formatMillisecondsToString(false))
+        binding.endTime.setText(startAndEndTime!!.second.formatMillisecondsToString(false))
 
         binding.segmentCategory.items = resources.getStringArray(R.array.sponsorBlockSegmentNames).toList()
 

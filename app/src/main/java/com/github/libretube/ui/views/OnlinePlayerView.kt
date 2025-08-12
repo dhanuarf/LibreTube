@@ -1,5 +1,6 @@
 package com.github.libretube.ui.views
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
@@ -8,6 +9,9 @@ import android.text.format.DateUtils
 import android.util.AttributeSet
 import android.view.Window
 import android.widget.Toast
+import androidx.annotation.OptIn
+import androidx.collection.FloatFloatPair
+import androidx.collection.LongLongPair
 import androidx.core.os.bundleOf
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
@@ -18,6 +22,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import com.github.libretube.R
+import com.github.libretube.api.obj.Segment
 import com.github.libretube.constants.IntentData
 import com.github.libretube.constants.PreferenceKeys
 import com.github.libretube.enums.PlayerCommand
@@ -34,7 +39,10 @@ import com.github.libretube.ui.interfaces.OnlinePlayerOptions
 import com.github.libretube.ui.models.CommonPlayerViewModel
 import com.github.libretube.ui.models.PlayerViewModel
 import com.github.libretube.util.PlayingQueue
-import kotlin.io.path.Path
+import com.github.libretube.util.TextUtils
+import com.github.libretube.util.TextUtils.formatMillisecondsToString
+import java.lang.StringBuilder
+import java.util.concurrent.TimeUnit
 
 @UnstableApi
 class OnlinePlayerView(
@@ -48,6 +56,12 @@ class OnlinePlayerView(
 
     private val handler = Handler(Looper.getMainLooper())
 
+    private val playerCurrentPosition: Long
+        get() = player?.currentPosition?.takeIf { it != C.TIME_UNSET } ?: 0
+
+    private val playerDuration: Long
+        get() = player?.duration?.takeIf { it != C.TIME_UNSET } ?: 0
+
     /**
      * The window that needs to be addressed for showing and hiding the system bars
      * If null, the activity's default/main window will be used
@@ -56,8 +70,11 @@ class OnlinePlayerView(
 
     var selectedResolution: Int? = null
     var sponsorBlockAutoSkip = true
+    var newSegmentStartAndEndTime = LongLongPair(Long.MAX_VALUE, Long.MIN_VALUE)
+    val isSponsorBlockSubmissionMenuOpened: Boolean
+        get() = !backgroundBinding.createSegmentContainer.isGone
 
-    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+    @OptIn(UnstableApi::class)
     override fun getOptionsMenuItems(): List<BottomSheetItem> {
         return super.getOptionsMenuItems() +
                 listOf(
@@ -93,15 +110,13 @@ class OnlinePlayerView(
                     }
                 )
     }
-    var isSponsorBlockSubmissionMenuOpened = false
-    fun openSponsorBlockSubmissionMenu(open: Boolean){
-        backgroundBinding.createSegmentContainer.isGone = !open
-        isSponsorBlockSubmissionMenuOpened = open
-    }
-    fun closeSponsorBlockSubmissionMenu(){
 
+    fun openSponsorBlockSubmissionMenu(open: Boolean) {
+        backgroundBinding.createSegmentContainer.isGone = !open
+        if (open) hideController()
     }
-    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+
+    @OptIn(UnstableApi::class)
     private fun getCurrentResolutionSummary(): String {
         val currentQuality = player?.videoSize?.height ?: 0
         var summary = "${currentQuality}p"
@@ -191,16 +206,72 @@ class OnlinePlayerView(
             )
             updateSbImageResource()
         }
-        with(backgroundBinding){
-            sbSegmentSetTimeButton.setOnClickListener { Toast.makeText(context, "settime", Toast.LENGTH_SHORT).show() }
-            sbSegmentFineBackwardButton.setOnClickListener { player?.seekBy(-100) }
-            sbSegmentFineForwardButton.setOnClickListener { player?.seekBy(100) }
+        with(backgroundBinding) {
+            // set all segment creation menu buttons click event and dont register the click if
+            // the player's controller is open
+            sbSegmentStartTimeText.setOnClickListener {
+                if (isControllerFullyVisible) return@setOnClickListener
+
+                var playerPosition = playerCurrentPosition
+                // make sure the start time is not more than the end time
+                if (newSegmentStartAndEndTime.second != Long.MIN_VALUE) {
+                    playerPosition.coerceAtMost(newSegmentStartAndEndTime.second)
+                }
+
+                // remove leading hours if video duration is less than an hour
+                sbSegmentStartTimeText.text =
+                    playerPosition.formatMillisecondsToString(
+                        playerDuration < DateUtils.HOUR_IN_MILLIS
+                    )
+
+                newSegmentStartAndEndTime = LongLongPair(
+                    playerPosition,
+                    newSegmentStartAndEndTime.second
+                )
+            }
+            sbSegmentEndTimeText.setOnClickListener {
+                if (isControllerFullyVisible) return@setOnClickListener
+
+                var playerPosition = playerCurrentPosition
+
+                // make sure the end time is not less than the start time
+                if (newSegmentStartAndEndTime.second != Long.MIN_VALUE) {
+                    playerPosition.coerceAtMost(newSegmentStartAndEndTime.second)
+                }
+
+                // remove leading hours if video duration is less than an hour
+                sbSegmentEndTimeText.text =
+                    playerPosition.formatMillisecondsToString(
+                        playerDuration < DateUtils.HOUR_IN_MILLIS
+                    )
+
+                newSegmentStartAndEndTime = LongLongPair(
+                    newSegmentStartAndEndTime.first,
+                    playerPosition
+                )
+            }
+            sbSegmentFineBackwardButton.setOnClickListener {
+                if (isControllerFullyVisible) return@setOnClickListener
+
+                player?.seekBy(-100)
+            }
+            sbSegmentFineForwardButton.setOnClickListener {
+                if (isControllerFullyVisible) return@setOnClickListener
+
+                player?.seekBy(100)
+            }
             sbSegmentSubmitButton.setOnClickListener {
+                if (isControllerFullyVisible) return@setOnClickListener
+
                 val submitSegmentDialog = SubmitSegmentDialog()
-                submitSegmentDialog.arguments = buildSbBundleArgs() ?: return@setOnClickListener
+                submitSegmentDialog.arguments = buildSbBundleArgs(false) ?: return@setOnClickListener
                 submitSegmentDialog.show((context as BaseActivity).supportFragmentManager, null)
             }
-            sbSegmentCloseButton.setOnClickListener { openSponsorBlockSubmissionMenu(false) }
+            sbSegmentCloseButton.setOnClickListener {
+                if (isControllerFullyVisible) return@setOnClickListener
+
+                openSponsorBlockSubmissionMenu(false)
+            }
         }
         syncQueueButtons()
 
@@ -214,20 +285,39 @@ class OnlinePlayerView(
             PreferenceHelper.getBoolean(PreferenceKeys.CONTRIBUTE_TO_DEARROW, false)
         binding.dearrowSubmit.setOnClickListener {
             val submitDialog = SubmitDeArrowDialog()
-            submitDialog.arguments = buildSbBundleArgs() ?: return@setOnClickListener
+            submitDialog.arguments = buildSbBundleArgs(true) ?: return@setOnClickListener
             submitDialog.show((context as BaseActivity).supportFragmentManager, null)
         }
     }
 
-    private fun buildSbBundleArgs(): Bundle? {
+    private fun buildSbBundleArgs(isDeArrow: Boolean): Bundle? {
         val currentPosition = player?.currentPosition?.takeIf { it != C.TIME_UNSET } ?: 0
         val duration = player?.duration?.takeIf { it != C.TIME_UNSET }
         val videoId = PlayingQueue.getCurrent()?.url?.toID() ?: return null
 
+        if (isDeArrow) {
+            return bundleOf(
+                IntentData.currentPosition to currentPosition,
+                IntentData.duration to duration,
+                IntentData.videoId to videoId,
+            )
+        }
+
+        var startAndEndTime: List<Long> = emptyList()
+        // check if both value is initialized with valid value
+        if (newSegmentStartAndEndTime.first < newSegmentStartAndEndTime.second) {
+            startAndEndTime = listOf(
+                newSegmentStartAndEndTime.first,
+                newSegmentStartAndEndTime.second
+            )
+        }
+        if (startAndEndTime.isEmpty()) return null
+
         return bundleOf(
             IntentData.currentPosition to currentPosition,
             IntentData.duration to duration,
-            IntentData.videoId to videoId
+            IntentData.videoId to videoId,
+            IntentData.newSegmentsStartAndEndTime to startAndEndTime.toLongArray()
         )
     }
 
@@ -273,6 +363,10 @@ class OnlinePlayerView(
         }
 
         updateTopBarMargin()
+
+        backgroundBinding.createSegmentContainer.alpha = 1f
+        backgroundBinding.createSegmentContainer.isEnabled = true
+
     }
 
     override fun showController() {
@@ -281,6 +375,10 @@ class OnlinePlayerView(
         if (commonPlayerViewModel?.isFullscreen?.value == true && !isPlayerLocked) {
             toggleSystemBars(true)
         }
+
+        backgroundBinding.createSegmentContainer.alpha = 0.5f
+        backgroundBinding.createSegmentContainer.isEnabled = false
+
     }
 
     override fun isFullscreen(): Boolean {

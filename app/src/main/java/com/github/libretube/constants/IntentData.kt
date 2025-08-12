@@ -56,6 +56,7 @@ object IntentData {
     const val streams = "streams"
     const val chapters = "chapters"
     const val segments = "segments"
+    const val newSegmentsStartAndEndTime = "newSegmentStartAndEndTime"
     const val alreadyStarted = "alreadyStarted"
     const val showUpcoming = "showUpcoming"
     const val customInstance = "customInstance"
