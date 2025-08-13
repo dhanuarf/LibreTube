@@ -2,7 +2,6 @@ package com.github.libretube.ui.views
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.text.format.DateUtils
@@ -58,7 +57,13 @@ class OnlinePlayerView(
     private val playerDuration: Long
         get() = player?.duration?.takeIf { it != C.TIME_UNSET } ?: 0
 
-    val isRTL : Boolean
+    private val currentVideoId: String?
+        get() = PlayingQueue.getCurrent()?.url?.toID()
+
+    private val isSbCreateSegmentMenuOpened: Boolean
+        get() = !backgroundBinding.createSegmentContainer.isGone
+
+    private val isLayoutDirectionRTL : Boolean
         get() = context.resources.configuration.layoutDirection == LAYOUT_DIRECTION_RTL
 
     /**
@@ -70,9 +75,6 @@ class OnlinePlayerView(
     var selectedResolution: Int? = null
     var sponsorBlockAutoSkip = true
     var newSegmentStartAndEndTime = LongLongPair(Long.MAX_VALUE, Long.MIN_VALUE)
-
-    val isSponsorBlockSubmissionMenuOpened: Boolean
-        get() = !backgroundBinding.createSegmentContainer.isGone
 
     @OptIn(UnstableApi::class)
     override fun getOptionsMenuItems(): List<BottomSheetItem> {
@@ -111,15 +113,17 @@ class OnlinePlayerView(
                 )
     }
 
-    fun resetCreatedSbSegment(){
+    private fun resetCreatedSbSegment(){
         newSegmentStartAndEndTime = LongLongPair(Long.MAX_VALUE, Long.MIN_VALUE)
         backgroundBinding.sbSegmentStartTimeBtn.text = "?"
         backgroundBinding.sbSegmentEndTimeBtn.text = "?"
     }
 
-    private fun toggleSbCreateSegmentMenu() {
-        backgroundBinding.createSegmentContainer.isGone = isSponsorBlockSubmissionMenuOpened
-        if (isSponsorBlockSubmissionMenuOpened) hideController()
+    private fun toggleSbCreateSegmentMenu(open: Boolean? = null) {
+        backgroundBinding.createSegmentContainer.isGone =
+            if (open != null) !open else isSbCreateSegmentMenuOpened
+
+        if (isSbCreateSegmentMenuOpened) hideController()
     }
 
     private fun toggleSbOptions(){
@@ -217,9 +221,11 @@ class OnlinePlayerView(
             )
             updateSbImageResource()
         }
+
         binding.sbOptionsToggle.setOnClickListener {
             toggleSbOptions()
         }
+
         syncQueueButtons()
 
         binding.sbCreate.isVisible =
@@ -230,27 +236,31 @@ class OnlinePlayerView(
 
         binding.sbVote.setOnClickListener {
             val submitSegmentVoteDialog = SubmitSegmentVoteDialog()
-            val videoId = PlayingQueue.getCurrent()?.url?.toID()
-            videoId?.let{
-                submitSegmentVoteDialog.arguments = bundleOf(IntentData.videoId to videoId)
-            }
+            submitSegmentVoteDialog.arguments = bundleOf(IntentData.videoId to currentVideoId)
             submitSegmentVoteDialog.show((context as BaseActivity).supportFragmentManager, null)
         }
 
         binding.dearrowSubmit.isVisible =
             PreferenceHelper.getBoolean(PreferenceKeys.CONTRIBUTE_TO_DEARROW, false)
         binding.dearrowSubmit.setOnClickListener {
+            val bundleArgs = bundleOf(
+                IntentData.videoId to currentVideoId,
+                IntentData.currentPosition to playerCurrentPosition
+            )
+
             val submitDialog = SubmitDeArrowDialog()
-            submitDialog.arguments = buildSbBundleArgs(true) ?: return@setOnClickListener
+            submitDialog.arguments = bundleArgs
             submitDialog.show((context as BaseActivity).supportFragmentManager, null)
         }
 
+        resetCreatedSbSegment()
+
         with(backgroundBinding) {
             sbSegmentStartTimeBtn.setOnClickListener {
-                var playerPosition = playerCurrentPosition
+                val playerPosition = playerCurrentPosition
                 var resetEndTime = false
 
-                // make sure the start time is not more than the end time. If it is, reset the
+                // make sure the start time is not more than or equal to the end time. If it is, reset the
                 // end time
                 if (newSegmentStartAndEndTime.second != Long.MIN_VALUE &&
                     playerPosition >= newSegmentStartAndEndTime.second
@@ -274,7 +284,7 @@ class OnlinePlayerView(
                 var playerPosition = playerCurrentPosition
                 var resetStartTime = false
 
-                // make sure the end time is not less than the start time. If it is, reset the
+                // make sure the end time is not less than or equal to the start time. If it is, reset the
                 // start time
                 if (newSegmentStartAndEndTime.first != Long.MAX_VALUE &&
                     playerPosition <= newSegmentStartAndEndTime.first
@@ -306,47 +316,28 @@ class OnlinePlayerView(
                     return@setOnClickListener
                 }
 
+                val startAndEndTime = listOf(
+                    newSegmentStartAndEndTime.first, newSegmentStartAndEndTime.second
+                )
+
+                val bundleArgs = bundleOf(
+                    IntentData.currentPosition to playerCurrentPosition,
+                    IntentData.duration to playerDuration,
+                    IntentData.videoId to currentVideoId,
+                    IntentData.newSegmentsStartAndEndTime to startAndEndTime.toLongArray()
+                )
+
                 val submitSegmentDialog = SubmitSegmentDialog()
-                submitSegmentDialog.arguments = buildSbBundleArgs(false) ?: return@setOnClickListener
+                submitSegmentDialog.arguments = bundleArgs
                 submitSegmentDialog.show((context as BaseActivity).supportFragmentManager, null)
             }
+
             sbSegmentCloseButton.setOnClickListener {
                 if (isControllerFullyVisible) return@setOnClickListener
 
                 toggleSbCreateSegmentMenu()
             }
         }
-    }
-
-    private fun buildSbBundleArgs(isDeArrow: Boolean): Bundle? {
-        val currentPosition = playerCurrentPosition
-        val duration = playerDuration
-        val videoId = PlayingQueue.getCurrent()?.url?.toID() ?: return null
-
-        if (isDeArrow) {
-            return bundleOf(
-                IntentData.currentPosition to currentPosition,
-                IntentData.duration to duration,
-                IntentData.videoId to videoId,
-            )
-        }
-
-        var startAndEndTime: List<Long> = emptyList()
-        // check if both value is initialized with valid value
-        if (newSegmentStartAndEndTime.first < newSegmentStartAndEndTime.second) {
-            startAndEndTime = listOf(
-                newSegmentStartAndEndTime.first,
-                newSegmentStartAndEndTime.second
-            )
-        }
-        if (startAndEndTime.isEmpty()) return null
-
-        return bundleOf(
-            IntentData.currentPosition to currentPosition,
-            IntentData.duration to duration,
-            IntentData.videoId to videoId,
-            IntentData.newSegmentsStartAndEndTime to startAndEndTime.toLongArray()
-        )
     }
 
     private fun syncQueueButtons() {
@@ -381,6 +372,51 @@ class OnlinePlayerView(
         }
     }
 
+    /**
+     * Animate away sponsorblock create segment menu and skip segment button to the side of
+     * the screen.
+     * @param animateAway set to `true` to animate away, set to `false` to reset the views to
+     * the original position
+     */
+    private fun animateAwaySbOverlays(animateAway: Boolean){
+        if (!backgroundBinding.sbSkipBtn.isGone) {
+            backgroundBinding.sbSkipBtn.animate().apply {
+                val viewWidth = backgroundBinding.sbSkipBtn.width
+                var translationXTarget = 0.0f
+
+                if(animateAway){
+                    translationXTarget = viewWidth * 85 / 100.0f
+                    // inverse direction if on RTL mode
+                    if (isLayoutDirectionRTL) translationXTarget *= -1.0f
+                }
+                translationX(translationXTarget)
+                setDuration(TRANSLATION_ANIM_DURATION)
+
+                // no need to start animation if it's already on target position
+                if(backgroundBinding.sbSkipBtn.translationX != translationXTarget)
+                    start()
+            }
+        }
+        if (isSbCreateSegmentMenuOpened) {
+            backgroundBinding.createSegmentContainer.animate().apply {
+                val viewWidth = backgroundBinding.createSegmentContainer.width
+                var translationXTarget = 0.0f
+
+                if(animateAway){
+                    translationXTarget = viewWidth * 85 / 100.0f
+                    // inverse direction if on RTL mode
+                    if (!isLayoutDirectionRTL) translationXTarget *= -1.0f
+                }
+                translationX(translationXTarget)
+                setDuration(TRANSLATION_ANIM_DURATION)
+
+                // no need to start animation if it's already on target position
+                if(backgroundBinding.createSegmentContainer.translationX != translationXTarget)
+                    start()
+            }
+        }
+    }
+
     override fun getWindow(): Window = currentWindow ?: activity.window
 
     override fun hideController() {
@@ -393,18 +429,8 @@ class OnlinePlayerView(
         updateTopBarMargin()
 
         if (binding.sbButtonsContainer.isVisible) toggleSbOptions()
+        animateAwaySbOverlays(false)
 
-        backgroundBinding.sbSkipBtnContainer.animate().apply {
-            translationX(0.0f)
-            setDuration(TRANSLATION_ANIM_DURATION)
-            start()
-        }
-
-        backgroundBinding.createSegmentContainer.animate().apply {
-            translationX(0.0f)
-            setDuration(TRANSLATION_ANIM_DURATION)
-            start()
-        }
     }
 
     override fun showController() {
@@ -414,24 +440,7 @@ class OnlinePlayerView(
             toggleSystemBars(true)
         }
 
-        if (isFullscreen()) return
-
-        backgroundBinding.sbSkipBtnContainer.animate().apply {
-            val viewWidth = backgroundBinding.sbSkipBtnContainer.width
-            val translationXTarget = viewWidth * 85 / 100.0f
-            // inverse direction if on RTL mode
-            translationX(if (isRTL) translationXTarget * -1.0f else translationXTarget)
-            setDuration(TRANSLATION_ANIM_DURATION)
-            start()
-        }
-        backgroundBinding.createSegmentContainer.animate().apply {
-            val viewWidth = backgroundBinding.createSegmentContainer.width
-            val translationXTarget = viewWidth * 85 / 100.0f
-            // inverse direction if on RTL mode
-            translationX(if (isRTL) translationXTarget else translationXTarget * -1.0f)
-            setDuration(TRANSLATION_ANIM_DURATION)
-            start()
-        }
+        if (!isFullscreen()) animateAwaySbOverlays(true)
 
     }
 

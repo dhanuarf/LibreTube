@@ -48,6 +48,7 @@ class SubmitSegmentDialog : DialogFragment() {
         }
     }
 
+    // TODO: add segment duration
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = DialogSubmitSegmentBinding.inflate(layoutInflater)
 
@@ -58,12 +59,6 @@ class SubmitSegmentDialog : DialogFragment() {
         binding.endTime.setText(startAndEndTime!!.second.formatMillisecondsToString(false))
 
         binding.segmentCategory.items = resources.getStringArray(R.array.sponsorBlockSegmentNames).toList()
-
-        binding.swapTimestamps.setOnClickListener {
-            val temp = binding.startTime.text
-            binding.startTime.text = binding.endTime.text
-            binding.endTime.text = temp
-        }
 
         return MaterialAlertDialogBuilder(requireContext())
             .setView(binding.root)

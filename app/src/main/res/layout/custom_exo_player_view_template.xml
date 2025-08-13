@@ -120,7 +120,6 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="8dp"
                     android:text="\?"
-                    android:textColor="?colorControlActivated"
                     app:layout_constraintLeft_toLeftOf="@id/start_time_text"
                     app:layout_constraintTop_toBottomOf="@id/start_time_text"
                     app:icon="@drawable/ic_time_outlined"
@@ -156,7 +155,6 @@
                     android:id="@+id/sb_segment_end_time_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="?colorControlActivated"
                     android:paddingHorizontal="8dp"
                     android:text="\?"
                     app:layout_constraintRight_toRightOf="parent"
@@ -216,30 +214,48 @@
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/sb_skip_btn_container"
+        android:id="@+id/sb_skip_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|end"
         android:layout_marginTop="15dp"
         android:layout_marginEnd="-10dp"
+        android:visibility="gone"
         android:paddingEnd="20dp"
         app:cardBackgroundColor="#88000000"
         app:strokeWidth="1dp"
         tools:ignore="RtlSymmetry">
-
-        <com.github.libretube.ui.views.DrawableTextView
-            android:id="@+id/sb_skip_btn"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawablePadding="20dp"
-            android:padding="10dp"
-            android:text="@string/skip_segment"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:visibility="gone"
-            app:drawableEndCompat="@drawable/ic_next"
-            app:drawableEndDimen="20dp"
-            app:drawableTint="@android:color/white" />
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/sb_category_color"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                app:shapeAppearance="@style/CircleImageView"
+                app:strokeWidth="1dp"
+                app:strokeColor="#cccccc"/>
+
+            <com.github.libretube.ui.views.DrawableTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:drawablePadding="10dp"
+                android:paddingVertical="10dp"
+                android:paddingHorizontal="8dp"
+                android:text="@string/skip_segment"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                app:drawableEndCompat="@drawable/ic_next"
+                app:drawableEndDimen="20dp"
+                app:drawableTint="@android:color/white" />
+        </LinearLayout>
+
 
     </com.google.android.material.card.MaterialCardView>
 

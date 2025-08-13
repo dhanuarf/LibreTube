@@ -10,6 +10,10 @@ import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.Paint
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
 import android.media.session.PlaybackState
 import android.os.Bundle
 import android.os.Handler
@@ -119,6 +123,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import kotlin.math.ceil
+import kotlin.plus
 
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -597,11 +602,8 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
                 playerBackgroundBinding.sbSkipBtn.alpha = alphaProgress
                 playerBackgroundBinding.createSegmentContainer.alpha = alphaProgress
                 playerBackgroundBinding.exoSubtitles.alpha = alphaProgress
-                playerBackgroundBinding.sbSkipBtnContainer.alpha = alphaProgress
 
                 disableController()
-
-//                binding.player.alpha = 0f
 
                 commonPlayerViewModel.setSheetExpand(false)
                 transitionEndId = endId
@@ -1086,6 +1088,19 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
                     playerController.seekTo((segment.segmentStartAndEnd.second * 1000f).toLong())
                     segment.skipped = true
                 }
+
+                val themeColor = ThemeHelper.getThemeColor(
+                    requireContext(), com.google.android.material.R.attr.colorOnSecondary)
+
+                val categoryColor =
+                    if (PreferenceHelper.getBoolean("sb_enable_custom_colors", false)) {
+                        PreferenceHelper.getInt(segment.category + "_color", themeColor)
+                    } else {
+                        themeColor
+                    }
+
+                playerBackgroundBinding.sbCategoryColor
+                    .setImageDrawable(categoryColor.toDrawable())
             }
         } else {
             playerBackgroundBinding.sbSkipBtn.isGone = true
@@ -1485,6 +1500,9 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
             updateCurrentSubtitle(null)
 
             openOrCloseFullscreenDialog(true)
+
+            playerBackgroundBinding.createSegmentContainer.isGone = true
+
             pipActivity = activity
         } else {
             binding.player.useController = true
