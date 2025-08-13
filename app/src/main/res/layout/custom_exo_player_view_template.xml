@@ -88,7 +88,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|start"
         android:layout_marginStart="2dp"
-        android:visibility="gone"
+        android:visibility="visible"
         app:cardBackgroundColor="#aa000000"
         app:strokeWidth="1dp"
         app:contentPadding="6dp">
@@ -110,23 +110,25 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="8dp"
                     android:text="@string/start_time"
+                    android:textColor="#ffffff"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>
 
                 <com.google.android.material.button.MaterialButton
-                    style="@style/Widget.Material3.Button.TextButton.Icon"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:id="@+id/sb_segment_start_time_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="8dp"
                     android:text="\?"
+                    android:textColor="#ffffff"
                     app:layout_constraintLeft_toLeftOf="@id/start_time_text"
                     app:layout_constraintTop_toBottomOf="@id/start_time_text"
-                    app:icon="@drawable/ic_time_outlined"
-                    app:iconSize="14dp"
+                    app:icon="@null"
+                    app:iconSize="0dp"
                     app:iconGravity="textStart"
                     app:strokeWidth="1dp"
-                    app:strokeColor="?colorControlActivated"
+                    app:strokeColor="#888888"
                     tools:ignore="hardcodedText" />
 
                 <TextView
@@ -135,7 +137,6 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="8dp"
                     android:text="-"
-                    android:textColor="?colorControlActivated"
                     app:layout_constraintBottom_toBottomOf="@+id/sb_segment_start_time_btn"
                     app:layout_constraintLeft_toRightOf="@id/sb_segment_start_time_btn"
                     app:layout_constraintTop_toTopOf="@id/sb_segment_start_time_btn"
@@ -147,24 +148,26 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="8dp"
                     android:text="@string/end_time"
+                    android:textColor="#ffffff"
                     app:layout_constraintLeft_toLeftOf="@id/sb_segment_end_time_btn"
                     app:layout_constraintTop_toTopOf="parent"/>
 
                 <com.google.android.material.button.MaterialButton
-                    style="@style/Widget.Material3.Button.TextButton.Icon"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:id="@+id/sb_segment_end_time_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="8dp"
                     android:text="\?"
+                    android:textColor="#ffffff"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/end_time_text"
                     app:layout_constraintLeft_toRightOf="@id/separator_text"
-                    app:icon="@drawable/ic_time_outlined"
-                    app:iconSize="14dp"
+                    app:icon="@null"
+                    app:iconSize="0dp"
                     app:iconGravity="textStart"
                     app:strokeWidth="1dp"
-                    app:strokeColor="?colorControlActivated"
+                    app:strokeColor="#888888"
                     tools:ignore="hardcodedText" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

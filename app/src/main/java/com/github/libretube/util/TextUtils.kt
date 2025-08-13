@@ -52,7 +52,7 @@ object TextUtils {
     }
 
     /**
-     * Get time in HH:mm:ss.SSS format from milliseconds
+     * Get time in `HH:mm:ss.SSS` format from milliseconds
      */
     @SuppressLint("DefaultLocale")
     fun Long.formatMillisecondsToString(removeHoursIfZero: Boolean): String {
@@ -88,7 +88,8 @@ object TextUtils {
         if (timeString.isDigitsOnly()) return timeString.toLongOrNull()?.toFloat()
 
         if (timeString.all { it.isDigit() || ",.:".contains(it) }) {
-            var inHours = true
+            // check if there's leading hours
+            var inHours = timeString.count { it == ':' } == 2
 
             var secondsTotal = 0
             var secondsScoped = 0

@@ -375,7 +375,7 @@ class OnlinePlayerView(
     /**
      * Animate away sponsorblock create segment menu and skip segment button to the side of
      * the screen.
-     * @param animateAway set to `true` to animate away, set to `false` to reset the views to
+     * @param animateAway set to `true` to animate away, set to `false` to animate the views to
      * the original position
      */
     private fun animateAwaySbOverlays(animateAway: Boolean){
