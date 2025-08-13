@@ -449,6 +449,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
             binding.descriptionLayout.setSegments(segments)
             playerControlsBinding.exoProgress.setSegments(segments)
             playerControlsBinding.sbToggle.isVisible = segments.isNotEmpty()
+            playerControlsBinding.sbVote.isVisible = segments.isNotEmpty()
             segments.firstOrNull { it.category == PlayerHelper.SPONSOR_HIGHLIGHT_CATEGORY }
                 ?.let {
                     lifecycleScope.launch(Dispatchers.IO) { initializeHighlight(it) }
@@ -591,10 +592,17 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
                     mainMotionLayout.progress = abs(progress)
                 }
 
-                val hideAnimationAlpha = 1.0f - (progress * 5.0f).coerceAtMost(1.0f)
-                playerBackgroundBinding.sbSkipBtn.alpha = hideAnimationAlpha
-                playerBackgroundBinding.createSegmentContainer.alpha = hideAnimationAlpha
+                val alphaProgressFactor = 4.0f
+                val alphaProgress = 1.0f - (progress * alphaProgressFactor).coerceAtMost(1.0f)
+                playerBackgroundBinding.sbSkipBtn.alpha = alphaProgress
+                playerBackgroundBinding.createSegmentContainer.alpha = alphaProgress
+                playerBackgroundBinding.exoSubtitles.alpha = alphaProgress
+                playerBackgroundBinding.sbSkipBtnContainer.alpha = alphaProgress
+
                 disableController()
+
+//                binding.player.alpha = 0f
+
                 commonPlayerViewModel.setSheetExpand(false)
                 transitionEndId = endId
                 transitionStartId = startId
@@ -618,6 +626,8 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
                     disableController()
                     commonPlayerViewModel.setSheetExpand(null)
                     playerBackgroundBinding.sbSkipBtn.isGone = true
+                    playerBackgroundBinding.createSegmentContainer.isGone = true
+
                     if (NavBarHelper.hasTabs()) {
                         mainMotionLayout.progress = 1F
                     }
@@ -1086,6 +1096,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
         // reset the player view
         playerControlsBinding.exoProgress.clearSegments()
         playerControlsBinding.sbToggle.isGone = true
+        playerControlsBinding.sbVote.isGone = true
 
         // reset the comments to become reloaded later
         commentsViewModel.reset()

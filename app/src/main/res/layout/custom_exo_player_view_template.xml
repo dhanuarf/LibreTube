@@ -82,108 +82,132 @@
         android:layout_gravity="center"
         android:gravity="center" />
 
-    <!-- Create sponsorblock segment container view -->
     <com.google.android.material.card.MaterialCardView
-        android:layout_marginStart="2dp"
         android:id="@+id/create_segment_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|start"
+        android:layout_marginStart="2dp"
         android:visibility="gone"
         app:cardBackgroundColor="#aa000000"
         app:strokeWidth="1dp"
-        app:contentPadding="6dp"
-        >
+        app:contentPadding="6dp">
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            >
-            <LinearLayout
+            android:orientation="vertical">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
-                <ImageView
-                    style="@style/SponsorBlockSegmentButton"
-                    android:visibility="gone"
-                    android:id="@+id/sb_segment_set_time_button"
-                    android:src="@drawable/ic_time_outlined"
-                    app:tint="?colorControlActivated"
-                    android:contentDescription=""
-                    android:tooltipText=""/>
-                <com.google.android.material.button.MaterialButton
-                    style="@style/Widget.Material3.Button.TextButton.Icon"
-                    android:id="@+id/sb_segment_start_time_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="?colorControlActivated"
-                    android:paddingHorizontal="8dp"
-                    app:icon="@drawable/ic_time_outlined"
-                    app:iconSize="14dp"
-                    app:iconGravity="textStart"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="?colorControlActivated"
-                    tools:ignore="hardcodedText"
-                    android:text="\?"/>
-                <TextView
-                    android:textColor="?colorControlActivated"
-                    android:paddingHorizontal="8dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:ignore="hardcodedText"
-                    android:text="-"/>
-                <com.google.android.material.button.MaterialButton
-                    style="@style/Widget.Material3.Button.TextButton.Icon"
-                    android:id="@+id/sb_segment_end_time_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="?colorControlActivated"
-                    android:paddingHorizontal="8dp"
-                    app:icon="@drawable/ic_time_outlined"
-                    app:iconSize="14dp"
-                    app:iconGravity="textStart"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="?colorControlActivated"
-                    tools:ignore="hardcodedText"
-                    android:text="\?"/>
 
-            </LinearLayout>
+                <TextView
+                    android:id="@+id/start_time_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="8dp"
+                    android:text="@string/start_time"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <com.google.android.material.button.MaterialButton
+                    style="@style/Widget.Material3.Button.TextButton.Icon"
+                    android:id="@+id/sb_segment_start_time_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="8dp"
+                    android:text="\?"
+                    android:textColor="?colorControlActivated"
+                    app:layout_constraintLeft_toLeftOf="@id/start_time_text"
+                    app:layout_constraintTop_toBottomOf="@id/start_time_text"
+                    app:icon="@drawable/ic_time_outlined"
+                    app:iconSize="14dp"
+                    app:iconGravity="textStart"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?colorControlActivated"
+                    tools:ignore="hardcodedText" />
+
+                <TextView
+                    android:id="@+id/separator_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="8dp"
+                    android:text="-"
+                    android:textColor="?colorControlActivated"
+                    app:layout_constraintBottom_toBottomOf="@+id/sb_segment_start_time_btn"
+                    app:layout_constraintLeft_toRightOf="@id/sb_segment_start_time_btn"
+                    app:layout_constraintTop_toTopOf="@id/sb_segment_start_time_btn"
+                    tools:ignore="hardcodedText" />
+
+                <TextView
+                    android:id="@+id/end_time_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="8dp"
+                    android:text="@string/end_time"
+                    app:layout_constraintLeft_toLeftOf="@id/sb_segment_end_time_btn"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <com.google.android.material.button.MaterialButton
+                    style="@style/Widget.Material3.Button.TextButton.Icon"
+                    android:id="@+id/sb_segment_end_time_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?colorControlActivated"
+                    android:paddingHorizontal="8dp"
+                    android:text="\?"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/end_time_text"
+                    app:layout_constraintLeft_toRightOf="@id/separator_text"
+                    app:icon="@drawable/ic_time_outlined"
+                    app:iconSize="14dp"
+                    app:iconGravity="textStart"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?colorControlActivated"
+                    tools:ignore="hardcodedText" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <LinearLayout
                 android:layout_marginTop="4dp"
-                android:gravity="center_vertical|end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_gravity="start"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layoutDirection="ltr">
+
                 <ImageView
                     style="@style/SponsorBlockSegmentButton"
                     android:id="@+id/sb_segment_fine_backward_button"
                     android:src="@drawable/ic_skip"
                     android:rotation="180"
                     android:contentDescription="@null"
-                    android:tooltipText="Fine backward adjustment"
-                    />
+                    android:tooltipText="@string/tooltip_fine_backward_adjustment" />
+
                 <ImageView
                     style="@style/SponsorBlockSegmentButton"
                     android:id="@+id/sb_segment_fine_forward_button"
                     android:src="@drawable/ic_skip"
                     android:contentDescription="@null"
-                    android:tooltipText="Fine forward adjustment"
-                    />
+                    android:tooltipText="@string/tooltip_fine_forward_adjustment" />
+
                 <ImageView
                     style="@style/SponsorBlockSegmentButton"
                     android:id="@+id/sb_segment_submit_button"
                     android:src="@drawable/ic_upload_segment"
                     android:rotation="0"
-                    android:contentDescription=""
-                    android:tooltipText=""/>
+                    android:contentDescription="@null"
+                    android:tooltipText="@string/tooltip_sponsorblock_submit_segment"/>
+
                 <ImageView
                     style="@style/SponsorBlockSegmentButton"
                     android:id="@+id/sb_segment_close_button"
                     android:src="@drawable/ic_close"
-                    android:rotation="0"
-                    android:contentDescription=""
+                    android:contentDescription="@null"
                     android:tooltipText=""/>
             </LinearLayout>
 
@@ -192,6 +216,7 @@
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/sb_skip_btn_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|end"

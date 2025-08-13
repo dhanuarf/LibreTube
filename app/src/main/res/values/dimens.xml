@@ -4,7 +4,4 @@
     <integer name="grid_items_landscape">2</integer>
 
     <item name="landscape_player_constraint_width_percentage" type="dimen" format="float">0.55</item>
-
-    <dimen name="sb_create_segment_button_size">24dp</dimen>
-    <dimen name="sb_create_segment_button_margin_size">10dp</dimen>
 </resources>

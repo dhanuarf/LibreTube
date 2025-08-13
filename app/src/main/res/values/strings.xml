@@ -504,6 +504,7 @@
     <string name="resolution_limited">limited</string>
     <string name="registration_disabled">Registration disabled</string>
     <string name="sb_create_segment">Create segment</string>
+    <string name="sb_vote_segment">Vote segment</string>
     <string name="segment_type">Segment type</string>
     <string name="sb_invalid_segment">Invalid segment start or end</string>
     <string name="contribute_to_sponsorblock">Contribute to SponsorBlock</string>
@@ -566,6 +567,10 @@
     <string name="tooltip_locked">Lock player</string>
     <string name="tooltip_unlocked">Unlock player</string>
     <string name="tooltip_sponsorblock">Toggle SponsorBlock</string>
+    <string name="tooltip_sponsorblock_options">SponsorBlock Options</string>
+    <string name="tooltip_fine_backward_adjustment">Fine backward adjustment</string>
+    <string name="tooltip_fine_forward_adjustment">Fine forward adjustment</string>
+    <string name="tooltip_sponsorblock_submit_segment">Submit segment</string>
     <string name="tooltip_options">Options</string>
     <string name="tooltip_minimize">Minimize</string>
     <string name="tooltip_fullscreen">Fullscreen</string>

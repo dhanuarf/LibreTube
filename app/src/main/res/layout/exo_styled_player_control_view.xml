@@ -59,6 +59,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:animateLayoutChanges="true"
                 android:layoutDirection="ltr">
 
                 <androidx.appcompat.widget.SwitchCompat
@@ -83,22 +84,47 @@
                     android:visibility="gone"
                     app:tint="@android:color/white" />
 
-                <ImageButton
-                    android:id="@+id/sb_submit"
-                    style="@style/PlayerControlTop"
-                    android:layout_marginEnd="2dp"
-                    android:src="@drawable/ic_upload_segment"
-                    android:tooltipText="@string/sb_create_segment"
-                    android:visibility="gone"
-                    app:tint="@android:color/white" />
+                <LinearLayout
+                    android:id="@+id/sb_buttons_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layoutDirection="ltr"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <ImageButton
+                        android:id="@+id/sb_create"
+                        style="@style/PlayerControlTop"
+                        android:layout_marginEnd="2dp"
+                        android:src="@drawable/ic_sb_segment_create"
+                        android:tooltipText="@string/sb_create_segment"
+                        app:tint="@android:color/white" />
+
+                    <ImageButton
+                        android:id="@+id/sb_vote"
+                        style="@style/PlayerControlTop"
+                        android:layout_marginEnd="2dp"
+                        android:src="@drawable/ic_sb_segment_vote"
+                        android:tooltipText="@string/sb_vote_segment"
+                        app:tint="@android:color/white" />
+
+                    <ImageButton
+                        android:id="@+id/sb_toggle"
+                        style="@style/PlayerControlTop"
+                        android:layout_marginEnd="2dp"
+                        android:src="@drawable/ic_sb_enabled"
+                        android:tooltipText="@string/tooltip_sponsorblock"
+                        app:tint="@android:color/white" />
+
+                </LinearLayout>
 
                 <ImageButton
-                    android:id="@+id/sb_toggle"
+                    android:id="@+id/sb_options_toggle"
                     style="@style/PlayerControlTop"
                     android:layout_marginEnd="2dp"
-                    android:src="@drawable/ic_sb_enabled"
-                    android:tooltipText="@string/tooltip_sponsorblock"
-                    android:visibility="gone"
+                    android:src="@drawable/ic_sb_options"
+                    android:tooltipText="@string/tooltip_sponsorblock_options"
                     app:tint="@android:color/white" />
 
                 <ImageButton

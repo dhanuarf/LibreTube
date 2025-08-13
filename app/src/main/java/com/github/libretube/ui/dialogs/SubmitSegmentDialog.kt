@@ -30,7 +30,7 @@ class SubmitSegmentDialog : DialogFragment() {
     private var videoId: String = ""
     private var currentPosition: Long = 0
     private var duration: Long? = null
-    private var segments: List<Segment> = emptyList()
+
     private var startAndEndTime: LongLongPair? = null
 
     private var _binding: DialogSubmitSegmentBinding? = null
@@ -54,9 +54,6 @@ class SubmitSegmentDialog : DialogFragment() {
         binding.createSegment.setOnClickListener {
             lifecycleScope.launch { createSegment() }
         }
-        binding.voteSegment.setOnClickListener {
-            lifecycleScope.launch { voteForSegment() }
-        }
         binding.startTime.setText(startAndEndTime!!.first.formatMillisecondsToString(false))
         binding.endTime.setText(startAndEndTime!!.second.formatMillisecondsToString(false))
 
@@ -66,10 +63,6 @@ class SubmitSegmentDialog : DialogFragment() {
             val temp = binding.startTime.text
             binding.startTime.text = binding.endTime.text
             binding.endTime.text = temp
-        }
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            fetchSegments()
         }
 
         return MaterialAlertDialogBuilder(requireContext())
@@ -116,67 +109,5 @@ class SubmitSegmentDialog : DialogFragment() {
         }
 
         requireDialog().dismiss()
-    }
-
-    private suspend fun voteForSegment() {
-        val binding = _binding ?: return
-        val context = requireContext().applicationContext
-
-        val segmentID = segments.getOrNull(binding.segmentsDropdown.selectedItemPosition)
-            ?.uuid ?: return
-
-        // see https://wiki.sponsor.ajay.app/w/API_Docs#POST_/api/voteOnSponsorTime
-        val score = when {
-            binding.upvote.isChecked -> 1
-            binding.downvote.isChecked -> 0
-            else -> 20
-        }
-
-        dialog?.hide()
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                RetrofitInstance.externalApi.voteOnSponsorTime(
-                    uuid = segmentID,
-                    userID = PreferenceHelper.getSponsorBlockUserID(),
-                    score = score
-                )
-                context.toastFromMainDispatcher(R.string.success)
-            } catch (e: Exception) {
-                context.toastFromMainDispatcher(e.localizedMessage.orEmpty())
-            }
-            withContext(Dispatchers.Main) { dialog?.dismiss() }
-        }
-    }
-
-    private suspend fun fetchSegments() {
-        val categories = resources.getStringArray(R.array.sponsorBlockSegments).toList()
-        segments = try {
-            MediaServiceRepository.instance.getSegments(videoId, categories).segments
-        } catch (e: Exception) {
-            Log.e(TAG(), e.toString())
-            return
-        }
-
-        withContext(Dispatchers.Main) {
-            val binding = _binding ?: return@withContext
-
-            if (segments.isEmpty()) {
-                binding.voteSegmentContainer.isGone = true
-                Toast.makeText(context, R.string.no_segments_found, Toast.LENGTH_SHORT).show()
-                return@withContext
-            }
-
-            binding.segmentsDropdown.items = segments.map {
-                val (start, end) = it.segmentStartAndEnd
-                val (startStr, endStr) = DateUtils.formatElapsedTime(start.toLong()) to
-                        DateUtils.formatElapsedTime(end.toLong())
-                "${it.category} ($startStr - $endStr)"
-            }
-        }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }
