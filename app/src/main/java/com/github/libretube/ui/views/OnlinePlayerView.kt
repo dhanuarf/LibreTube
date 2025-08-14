@@ -2,6 +2,8 @@ package com.github.libretube.ui.views
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.ColorFilter
+import android.graphics.PorterDuff
 import android.os.Handler
 import android.os.Looper
 import android.text.format.DateUtils
@@ -27,6 +29,7 @@ import com.github.libretube.extensions.seekBy
 import com.github.libretube.extensions.toID
 import com.github.libretube.helpers.PlayerHelper
 import com.github.libretube.helpers.PreferenceHelper
+import com.github.libretube.helpers.ThemeHelper
 import com.github.libretube.obj.BottomSheetItem
 import com.github.libretube.services.AbstractPlayerService
 import com.github.libretube.ui.base.BaseActivity
@@ -48,6 +51,7 @@ class OnlinePlayerView(
     private var playerViewModel: PlayerViewModel? = null
     private var commonPlayerViewModel: CommonPlayerViewModel? = null
     private var viewLifecycleOwner: LifecycleOwner? = null
+    private var newSegmentStartAndEndTime = LongLongPair(Long.MAX_VALUE, Long.MIN_VALUE)
 
     private val handler = Handler(Looper.getMainLooper())
 
@@ -67,6 +71,12 @@ class OnlinePlayerView(
         get() = context.resources.configuration.layoutDirection == LAYOUT_DIRECTION_RTL
 
     /**
+     * Check if both value is initialized with valid value, end time must be higher than start time
+     */
+    private val isNewSegmentStartAndEndTimeValid: Boolean
+        get() = newSegmentStartAndEndTime.first < newSegmentStartAndEndTime.second
+
+    /**
      * The window that needs to be addressed for showing and hiding the system bars
      * If null, the activity's default/main window will be used
      */
@@ -74,7 +84,8 @@ class OnlinePlayerView(
 
     var selectedResolution: Int? = null
     var sponsorBlockAutoSkip = true
-    var newSegmentStartAndEndTime = LongLongPair(Long.MAX_VALUE, Long.MIN_VALUE)
+    var isOnNewSbSegmentPreviewMode = false
+
 
     @OptIn(UnstableApi::class)
     override fun getOptionsMenuItems(): List<BottomSheetItem> {
@@ -128,6 +139,33 @@ class OnlinePlayerView(
 
     private fun toggleSbOptions(){
         binding.sbButtonsContainer.isVisible = !binding.sbButtonsContainer.isVisible
+    }
+
+    private fun enterNewSegmentPreviewMode() {
+        if (!isNewSegmentStartAndEndTimeValid) return
+
+        playerViewModel?.previewSbSegmentStartAndEndTime = newSegmentStartAndEndTime
+
+        val tintColor = ThemeHelper.getThemeColor(
+            this.context, androidx.appcompat.R.attr.colorPrimary
+        )
+        val originalColorFilter = backgroundBinding.sbSegmentPreviewButton.colorFilter
+        backgroundBinding.sbSegmentPreviewButton.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN)
+
+        isOnNewSbSegmentPreviewMode = true
+
+        // rewind to [NEW_SEGMENT_PREVIEW_ROOM_MS] before the start of the segment
+        player?.seekTo(newSegmentStartAndEndTime.first - NEW_SEGMENT_PREVIEW_ROOM_MS)
+        player?.play()
+        //toggleSbCreateSegmentMenu(false)
+
+        // reset value [NEW_SEGMENT_PREVIEW_ROOM_MS] after the end of the segment
+        handler.postDelayed({
+            //toggleSbCreateSegmentMenu(true)
+            backgroundBinding.sbSegmentPreviewButton.colorFilter = originalColorFilter
+            isOnNewSbSegmentPreviewMode = false
+            playerViewModel?.previewSbSegmentStartAndEndTime = null
+        }, NEW_SEGMENT_PREVIEW_ROOM_MS * 2)
     }
 
     @OptIn(UnstableApi::class)
@@ -308,10 +346,11 @@ class OnlinePlayerView(
             sbSegmentFineBackwardButton.setOnClickListener { player?.seekBy(-100) }
             sbSegmentFineForwardButton.setOnClickListener { player?.seekBy(100) }
 
+            sbSegmentPreviewButton.setOnClickListener {
+                enterNewSegmentPreviewMode()
+            }
             sbSegmentSubmitButton.setOnClickListener {
-                // check if both value is initialized with valid value, end time must be higher
-                // than start time
-                if (newSegmentStartAndEndTime.first >= newSegmentStartAndEndTime.second){
+                if (!isNewSegmentStartAndEndTimeValid){
                     Toast.makeText(context, R.string.sb_invalid_segment, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
@@ -373,46 +412,29 @@ class OnlinePlayerView(
     }
 
     /**
-     * Animate away sponsorblock create segment menu and skip segment button to the side of
-     * the screen.
-     * @param animateAway set to `true` to animate away, set to `false` to animate the views to
+     * Animate away sponsorblock create segment menu to the side of the screen.
+     * @param animateAway set to `true` to animate away, set to `false` to animate it to
      * the original position
      */
-    private fun animateAwaySbOverlays(animateAway: Boolean){
-        if (!backgroundBinding.sbSkipBtn.isGone) {
-            backgroundBinding.sbSkipBtn.animate().apply {
-                val viewWidth = backgroundBinding.sbSkipBtn.width
-                var translationXTarget = 0.0f
-
-                if(animateAway){
-                    translationXTarget = viewWidth * 85 / 100.0f
-                    // inverse direction if on RTL mode
-                    if (isLayoutDirectionRTL) translationXTarget *= -1.0f
-                }
-                translationX(translationXTarget)
-                setDuration(TRANSLATION_ANIM_DURATION)
-
-                // no need to start animation if it's already on target position
-                if(backgroundBinding.sbSkipBtn.translationX != translationXTarget)
-                    start()
-            }
-        }
+    private fun animateAwaySbCreateSegmentMenu(animateAway: Boolean){
         if (isSbCreateSegmentMenuOpened) {
+            val viewWidth = backgroundBinding.createSegmentContainer.width
+            var translationXTarget = 0.0f
+
+            if(animateAway){
+                translationXTarget = viewWidth * 85 / 100.0f
+                // inverse direction if on RTL mode
+                if (!isLayoutDirectionRTL) translationXTarget *= -1.0f
+            }
+            // no need to animate if it's already on target position
+            if (backgroundBinding.createSegmentContainer.translationX == translationXTarget) {
+                return
+            }
+
             backgroundBinding.createSegmentContainer.animate().apply {
-                val viewWidth = backgroundBinding.createSegmentContainer.width
-                var translationXTarget = 0.0f
-
-                if(animateAway){
-                    translationXTarget = viewWidth * 85 / 100.0f
-                    // inverse direction if on RTL mode
-                    if (!isLayoutDirectionRTL) translationXTarget *= -1.0f
-                }
                 translationX(translationXTarget)
-                setDuration(TRANSLATION_ANIM_DURATION)
-
-                // no need to start animation if it's already on target position
-                if(backgroundBinding.createSegmentContainer.translationX != translationXTarget)
-                    start()
+                setDuration(TRANSLATION_ANIM_DURATION_MS)
+                start()
             }
         }
     }
@@ -428,8 +450,9 @@ class OnlinePlayerView(
 
         updateTopBarMargin()
 
+        // collapse sponsorblock buttons
         if (binding.sbButtonsContainer.isVisible) toggleSbOptions()
-        animateAwaySbOverlays(false)
+        animateAwaySbCreateSegmentMenu(false)
 
     }
 
@@ -440,7 +463,8 @@ class OnlinePlayerView(
             toggleSystemBars(true)
         }
 
-        if (!isFullscreen()) animateAwaySbOverlays(true)
+        // only animate away the view on portrait mode
+        if (!isFullscreen()) animateAwaySbCreateSegmentMenu(true)
 
     }
 
@@ -458,6 +482,7 @@ class OnlinePlayerView(
     }
 
     companion object {
-        private const val TRANSLATION_ANIM_DURATION = 120L
+        private const val TRANSLATION_ANIM_DURATION_MS = 120L
+        private const val NEW_SEGMENT_PREVIEW_ROOM_MS = 2 * 1000L
     }
 }

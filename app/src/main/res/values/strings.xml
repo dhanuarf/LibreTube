@@ -571,6 +571,7 @@
     <string name="tooltip_fine_backward_adjustment">Fine backward adjustment</string>
     <string name="tooltip_fine_forward_adjustment">Fine forward adjustment</string>
     <string name="tooltip_sponsorblock_submit_segment">Submit segment</string>
+    <string name="tooltip_sponsorblock_preview_segment">Preview segment</string>
     <string name="tooltip_options">Options</string>
     <string name="tooltip_minimize">Minimize</string>
     <string name="tooltip_fullscreen">Fullscreen</string>

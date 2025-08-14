@@ -51,6 +51,12 @@ object TextUtils {
         return localizeDate(instant.toLocalDate())
     }
 
+    fun Long.millisecondsToFloat(): Float{
+        val seconds = this / 1000L
+        val milliseconds = (this % 1000.0f) / 1000.0f
+
+        return seconds + milliseconds
+    }
     /**
      * Get time in `HH:mm:ss.SSS` format from milliseconds
      */

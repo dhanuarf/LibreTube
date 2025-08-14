@@ -1,5 +1,6 @@
 package com.github.libretube.ui.models
 
+import androidx.collection.LongLongPair
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.media3.common.util.UnstableApi
@@ -22,4 +23,6 @@ class PlayerViewModel : ViewModel() {
      * Set to true if the activity will be recreated due to an orientation change
      */
     var isOrientationChangeInProgress = false
+
+    var previewSbSegmentStartAndEndTime: LongLongPair? = null
 }

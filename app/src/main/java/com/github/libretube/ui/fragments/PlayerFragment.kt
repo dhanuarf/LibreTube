@@ -116,6 +116,7 @@ import com.github.libretube.ui.sheets.StatsSheet
 import com.github.libretube.util.OnlineTimeFrameReceiver
 import com.github.libretube.util.PlayingQueue
 import com.github.libretube.util.TextUtils
+import com.github.libretube.util.TextUtils.millisecondsToFloat
 import com.github.libretube.util.TextUtils.toTimeInSeconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -1065,6 +1066,14 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
         if (!playerController.isPlaying || !PlayerHelper.sponsorBlockEnabled) return
 
         handler.postDelayed(this::checkForSegments, 100)
+        if(viewModel.previewSbSegmentStartAndEndTime != null){
+            val (previewStartTime, previewEndTime) = viewModel.previewSbSegmentStartAndEndTime!!
+            if(playerController.currentPosition >= previewStartTime){
+                playerController.seekTo(previewEndTime)
+                viewModel.previewSbSegmentStartAndEndTime = null
+            }
+        }
+
         if (viewModel.segments.value.isNullOrEmpty()) return
 
         val segmentData = playerController.getCurrentSegment(
@@ -1089,18 +1098,19 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
                     segment.skipped = true
                 }
 
-                val themeColor = ThemeHelper.getThemeColor(
-                    requireContext(), com.google.android.material.R.attr.colorOnSecondary)
+                val customSbCategoryColorEnabled = PreferenceHelper.getBoolean("sb_enable_custom_colors", false)
+                playerBackgroundBinding.sbCategoryColor.isGone = !customSbCategoryColorEnabled
+                if (customSbCategoryColorEnabled) {
+                    val categoryColor = PreferenceHelper
+                        .getInt(segment.category + "_color", -1).takeIf { it != -1 }
 
-                val categoryColor =
-                    if (PreferenceHelper.getBoolean("sb_enable_custom_colors", false)) {
-                        PreferenceHelper.getInt(segment.category + "_color", themeColor)
-                    } else {
-                        themeColor
+                    categoryColor?.let{
+                        playerBackgroundBinding.sbCategoryColor
+                            .setImageDrawable(categoryColor.toDrawable())
                     }
+                }
 
-                playerBackgroundBinding.sbCategoryColor
-                    .setImageDrawable(categoryColor.toDrawable())
+
             }
         } else {
             playerBackgroundBinding.sbSkipBtn.isGone = true
