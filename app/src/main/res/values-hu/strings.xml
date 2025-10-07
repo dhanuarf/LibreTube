@@ -122,9 +122,8 @@
     <string name="version">Verzió: %1$s</string>
     <string name="error_occurred">Hiba</string>
     <string name="copied">Másolva</string>
-    <string name="legacy_subscriptions">Régi feliratkozások nézet</string>
     <string name="device_info">Eszközinformáció</string>
-    <string name="general_summary">Nyelv és régió</string>
+    <string name="general_summary">Letöltések és adatforgalom-csökkentés</string>
     <string name="worst_quality">Legrosszabb</string>
     <string name="default_subtitle_language">Feliratok nyelve</string>
     <string name="playingOnBackground">Lejátszás a háttérben…</string>
@@ -564,4 +563,6 @@
     <string name="podcasts">Podcastok</string>
     <string name="trailers">Előzetesek</string>
     <string name="music">Zene</string>
+    <string name="createNewPlaylist">Új lejátszási lista létrehozása</string>
+    <string name="include_timestamp_in_filename">Időbélyeg hozzáadása a fájlnévhez</string>
 </resources>

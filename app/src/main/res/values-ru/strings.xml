@@ -258,7 +258,6 @@
     <string name="skip_segment">Пропустить отрывок</string>
     <string name="download_channel_description">Показывать уведомление при загрузке медиа.</string>
     <string name="push_channel_name">Агент уведомлений</string>
-    <string name="legacy_subscriptions">Старый вид отображения подписок</string>
     <string name="audio_video_summary">Качество и формат</string>
     <string name="delete">Удалить из загрузок</string>
     <string name="renamePlaylist">Переименовать плейлист</string>
@@ -561,4 +560,10 @@
     <string name="authentication">Аутентификация</string>
     <string name="full_local_mode_desc">Работать непосредственно с YouTube, не используя Piped.</string>
     <string name="full_local_mode">Полный локальный режим</string>
+    <string name="createNewPlaylist">Создать новый плейлист</string>
+    <string name="playback_pitch_semitone_error_input">Значение должно быть в диапазоне от -%1$.1f (минимум) до %1$.1f (максимум)</string>
+    <string name="gaming">Игры</string>
+    <string name="podcasts">Подкасты</string>
+    <string name="trailers">Трейлеры</string>
+    <string name="music">Музыка</string>
 </resources>

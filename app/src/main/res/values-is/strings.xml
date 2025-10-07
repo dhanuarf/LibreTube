@@ -15,7 +15,6 @@
     <string name="autoRotatePlayer_summary">Afspilun á fullum skjá þegar tækinu er snúið</string>
     <string name="playerAudioQuality">Hljóðgæði</string>
     <string name="checking_frequency">Tíðni athugana …</string>
-    <string name="legacy_subscriptions">Eldri sýn á áskriftir</string>
     <string name="device_info">Upplýsingar um tæki</string>
     <string name="playlistUrl">Slóð á spilunarlista</string>
     <string name="new_group">Búa til</string>
@@ -311,7 +310,7 @@
     <string name="navLabelVisibility">Sýnileiki merkinga</string>
     <string name="pure_theme_summary">Hreint hvítt/svart þema</string>
     <string name="general">Almennt</string>
-    <string name="general_summary">Tungumál og landsvæði</string>
+    <string name="general_summary">Niðurhal og gagnasparnaður</string>
     <string name="playingOnBackground">Spila í bakgrunni…</string>
     <string name="caption_settings">Skýringartexti</string>
     <string name="worst_quality">Verst</string>
@@ -559,4 +558,11 @@
     <string name="full_local_mode">Alveg staðbundinn hamur</string>
     <string name="full_local_mode_desc">Sækja allt beint frá YouTube, á þess að nota Piped.</string>
     <string name="authentication">Auðkenning</string>
+    <string name="createNewPlaylist">Útbúa nýjan spilunarlista</string>
+    <string name="playback_pitch_semitone_error_input">Gildið þarf að vara á milli -%1$.1f (lágmark) og %1$.1f (hámark)</string>
+    <string name="gaming">Leikir</string>
+    <string name="podcasts">Hlaðvörp</string>
+    <string name="trailers">Kynningarstiklur</string>
+    <string name="music">Tónlist</string>
+    <string name="include_timestamp_in_filename">Hafa tímamerki í skráarheiti</string>
 </resources>

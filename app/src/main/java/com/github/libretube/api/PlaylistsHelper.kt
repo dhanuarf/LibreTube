@@ -11,7 +11,6 @@ import com.github.libretube.obj.PipedImportPlaylist
 import com.github.libretube.repo.LocalPlaylistsRepository
 import com.github.libretube.repo.PipedPlaylistRepository
 import com.github.libretube.repo.PlaylistRepository
-import com.github.libretube.util.deArrow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -51,11 +50,9 @@ object PlaylistsHelper {
 
     suspend fun getPlaylist(playlistId: String): Playlist {
         // load locally stored playlists with the auth api
-        return when (getPrivatePlaylistType(playlistId)) {
+        return when (getPlaylistType(playlistId)) {
             PlaylistType.PUBLIC -> MediaServiceRepository.instance.getPlaylist(playlistId)
             else -> playlistsRepository.getPlaylist(playlistId)
-        }.apply {
-            relatedStreams = relatedStreams.deArrow()
         }
     }
 
@@ -94,7 +91,7 @@ object PlaylistsHelper {
         return if (loggedIn) PlaylistType.PRIVATE else PlaylistType.LOCAL
     }
 
-    private fun getPrivatePlaylistType(playlistId: String): PlaylistType {
+    fun getPlaylistType(playlistId: String): PlaylistType {
         return if (playlistId.isDigitsOnly()) {
             PlaylistType.LOCAL
         } else if (playlistId.matches(pipedPlaylistRegex)) {

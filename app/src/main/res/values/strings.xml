@@ -230,7 +230,7 @@
     <string name="captions">Captions</string>
     <string name="none">None</string>
     <string name="general">General</string>
-    <string name="general_summary">Language, and region</string>
+    <string name="general_summary">Downloads and data-saver</string>
     <string name="playingOnBackground">Playing in the background…</string>
     <string name="caption_settings">Captions</string>
     <string name="playerAudioFormat">Audio format for player</string>
@@ -285,8 +285,7 @@
     <string name="maximum_image_cache">Max image cache size</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="open_copied">Open</string>
-    <string name="legacy_subscriptions">Legacy subscriptions view</string>
-    <string name="device_info">Device info</string>
+    <string name="device_info">Device Info</string>
     <string name="audio_video_summary">Quality and format</string>
     <string name="delete">Delete from downloads</string>
     <string name="delete_all">All downloads will be deleted!</string>
@@ -319,9 +318,7 @@
     <string name="alternative_videos_layout">Alternative videos layout</string>
     <string name="defaultIconLight">Default light</string>
     <string name="playlistCloned">Playlist cloned</string>
-    <string name="confirm_unsubscribe">Are you sure you want to unsubscribe %1$s?</string>
-    <string name="confirm_unsubscribing">Confirm unsubscribing</string>
-    <string name="confirm_unsubscribing_summary">Show a confirmation dialog before unsubscribing</string>
+    <string name="unsubscribe_snackbar_message">Successfully unsubscribed from %1$s</string>
     <string name="play_all">Play all</string>
     <string name="time">Time</string>
     <string name="start_time">Start time</string>
@@ -542,6 +539,7 @@
     <string name="podcasts">Podcasts</string>
     <string name="trailers">Trailers</string>
     <string name="music">Music</string>
+    <string name="include_timestamp_in_filename">Include timestamp in filename</string>
 
     <!-- Notification channel strings -->
     <string name="download_channel_name">Download Service</string>

@@ -39,7 +39,7 @@
     <string name="yes">បាទ/ចាស</string>
     <string name="username">អត្ថនាម</string>
     <string name="cannotDownload">មិនអាចទាញយកស្ទ្រីមនេះទេ។</string>
-    <string name="channels">កាណាល់</string>
+    <string name="channels">ឆាណែល</string>
     <string name="deletePlaylist">លុបកម្រងវីដេអូ</string>
     <string name="changeLanguage">ភាសា</string>
     <string name="category_segments">ចម្រៀក</string>
@@ -51,7 +51,7 @@
     <string name="retry">ព្យាយាមម្តងទៀត</string>
     <string name="playback_speed">ល្បឿនចាក់</string>
     <string name="update_available_text">អាប់ដេតថ្មីអាចប្រើប្រាស់បាន។ ចុចដើម្បីបើកទំព័រចេញផ្សាយ GitHub ។</string>
-    <string name="customization">កែតម្រូវ</string>
+    <string name="customization">ការកែតម្រូវ</string>
     <string name="instance">ឧបមា</string>
     <string name="areYouSure">លុបកម្រងវីដេអូឬ\?</string>
     <string name="download">ទាញយក</string>
@@ -97,7 +97,7 @@
     <string name="systemLanguage">ប្រព័ន្ធ</string>
     <string name="settings">ការកំណត់</string>
     <string name="playlistCreated">កម្រងវីដេអូបានបង្កើត។</string>
-    <string name="registered">បានចុះឈ្មោះ។ ឥឡូវ អ្នកអាចជាវកាណាល់នេះបាន។</string>
+    <string name="registered">បានចុះឈ្មោះ។ ឥឡូវ អ្នកអាចជាវឆាណែលនេះបាន។</string>
     <string name="loggedout">បានបណ្ដាច់ចេញ។</string>
     <string name="segment_skipped">ចម្រៀកដែលបានរំលង</string>
     <string name="music_videos">វីដេអូ យូធូបតន្ត្រី</string>
@@ -254,7 +254,6 @@
     <string name="delete">លុបពីការទាញយក</string>
     <string name="backup_restore">បម្រុងទុក &amp; ស្ដារឡើងវិញ</string>
     <string name="device_info">ព័ត៌មានឧបករណ៍</string>
-    <string name="legacy_subscriptions">មើលការជាវដែលមានស្រាប់</string>
     <string name="maximum_image_cache">ទំហំឃ្លាំងសម្ងាត់រូបភាពអតិបរមា</string>
     <string name="backup">បម្រុងទុក</string>
     <string name="repeat_mode_all">សារឡើងវិញទាំងអស់</string>
@@ -276,4 +275,5 @@
     <string name="show_updates">ពិនិត្យអាប់ដេតដោយស្វ័យប្រវត្តិ</string>
     <string name="grid_landscape">ជួរឈរក្រឡាចត្រង្គ (ផ្តេក)</string>
     <string name="comments_disabled">មតិត្រូវបានបិទដោយអ្នកបង្ហោះ។</string>
+    <string name="createNewPlaylist">បង្កើតកម្រងវីដេអូថ្មី</string>
 </resources>

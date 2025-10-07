@@ -10,6 +10,7 @@ import com.github.libretube.api.SubscriptionHelper
 import com.github.libretube.api.TrendingCategory
 import com.github.libretube.api.obj.Playlists
 import com.github.libretube.api.obj.StreamItem
+import com.github.libretube.constants.PreferenceKeys
 import com.github.libretube.constants.PreferenceKeys.HIDE_WATCHED_FROM_FEED
 import com.github.libretube.db.DatabaseHelper
 import com.github.libretube.db.DatabaseHolder
@@ -17,10 +18,8 @@ import com.github.libretube.db.obj.PlaylistBookmark
 import com.github.libretube.enums.ContentFilter
 import com.github.libretube.extensions.runSafely
 import com.github.libretube.extensions.updateIfChanged
-import com.github.libretube.helpers.LocaleHelper
 import com.github.libretube.helpers.PlayerHelper
 import com.github.libretube.helpers.PreferenceHelper
-import com.github.libretube.util.deArrow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -75,12 +74,16 @@ class HomeViewModel : ViewModel() {
         }
     }
     private suspend fun loadTrending(context: Context) {
-        val region = LocaleHelper.getTrendingRegion(context)
+        val region = PreferenceHelper.getTrendingRegion(context)
+        val category = PreferenceHelper.getString(
+            PreferenceKeys.TRENDING_CATEGORY,
+            TrendingCategory.TRENDING.name
+        ).let { TrendingCategory.valueOf(it) }
 
         runSafely(
             onSuccess = { videos -> trending.updateIfChanged(videos) },
             ioBlock = {
-                MediaServiceRepository.instance.getTrending(region, TrendingCategory.TRENDING).take(10).deArrow()
+                MediaServiceRepository.instance.getTrending(region, category)
             }
         )
     }
@@ -88,7 +91,7 @@ class HomeViewModel : ViewModel() {
     private suspend fun loadFeed(subscriptionsViewModel: SubscriptionsViewModel) {
         runSafely(
             onSuccess = { videos -> feed.updateIfChanged(videos) },
-            ioBlock = { tryLoadFeed(subscriptionsViewModel).take(20).deArrow() }
+            ioBlock = { tryLoadFeed(subscriptionsViewModel) }
         )
     }
 
@@ -102,7 +105,7 @@ class HomeViewModel : ViewModel() {
     private suspend fun loadPlaylists() {
         runSafely(
             onSuccess = { newPlaylists -> playlists.updateIfChanged(newPlaylists) },
-            ioBlock = { PlaylistsHelper.getPlaylists().take(20) }
+            ioBlock = { PlaylistsHelper.getPlaylists() }
         )
     }
 
@@ -115,11 +118,10 @@ class HomeViewModel : ViewModel() {
     }
 
     private suspend fun loadWatchingFromDB(): List<StreamItem> {
-        val videos = DatabaseHelper.getWatchHistoryPage(1, 50)
+        val videos = DatabaseHelper.getWatchHistoryPage(1, 20)
 
         return DatabaseHelper
             .filterUnwatched(videos.map { it.toStreamItem() })
-            .take(20)
     }
 
     private suspend fun tryLoadFeed(subscriptionsViewModel: SubscriptionsViewModel): List<StreamItem> {

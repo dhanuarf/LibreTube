@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ProgressBar
+    <com.google.android.material.loadingindicator.LoadingIndicator
         android:id="@+id/progress"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        tools:visibility="gone" />
 
     <com.github.libretube.ui.views.CustomSwipeToRefresh
         android:id="@+id/refresh"
@@ -19,7 +21,8 @@
             android:id="@+id/scroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone">
+            android:visibility="gone"
+            tools:visibility="visible">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -27,10 +30,20 @@
                 android:orientation="vertical"
                 android:paddingBottom="10dp">
 
-                <TextView
+                <LinearLayout
                     android:id="@+id/featuredTV"
-                    style="@style/HomeCategoryTitle"
-                    android:text="@string/featured" />
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?selectableItemBackground"
+                    android:visibility="gone">
+
+                    <TextView
+                        style="@style/HomeCategoryTitle"
+                        android:text="@string/featured"
+                        app:drawableEndCompat="@drawable/ic_arrow_right" />
+
+                </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/featuredRV"
@@ -41,12 +54,23 @@
                     android:orientation="horizontal"
                     android:paddingHorizontal="10dp"
                     android:visibility="gone"
+                    tools:visibility="visible"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-                <TextView
+                <LinearLayout
                     android:id="@+id/watchingTV"
-                    style="@style/HomeCategoryTitle"
-                    android:text="@string/continue_watching" />
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?selectableItemBackground"
+                    android:visibility="gone">
+
+                    <TextView
+                        style="@style/HomeCategoryTitle"
+                        android:text="@string/continue_watching"
+                        app:drawableEndCompat="@drawable/ic_arrow_right" />
+
+                </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/watchingRV"
@@ -59,10 +83,43 @@
                     android:visibility="gone"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-                <TextView
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:id="@+id/trendingTV"
-                    style="@style/HomeCategoryTitle"
-                    android:text="@string/trending" />
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    android:background="?selectableItemBackground"
+                    android:paddingEnd="10dp">
+
+                    <TextView
+                        style="@style/HomeCategoryTitle"
+                        android:text="@string/trending"
+                        android:background="@null"
+                        app:drawableEndCompat="@drawable/ic_arrow_right" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/trending_category"
+                        style="?materialIconButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        app:icon="@drawable/ic_frame" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/trending_region"
+                        style="?materialIconButtonFilledTonalStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        app:icon="@drawable/ic_region" />
+
+                </LinearLayout>
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -81,32 +138,55 @@
 
                 </RelativeLayout>
 
-                <TextView
+                <LinearLayout
                     android:id="@+id/bookmarksTV"
-                    style="@style/HomeCategoryTitle"
-                    android:text="@string/bookmarks" />
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?selectableItemBackground"
+                    android:visibility="gone">
+
+                    <TextView
+                        style="@style/HomeCategoryTitle"
+                        android:text="@string/bookmarks"
+                        app:drawableEndCompat="@drawable/ic_arrow_right" />
+
+                </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/bookmarksRV"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
-                    android:orientation="horizontal"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     android:visibility="gone"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                    app:layoutManager="com.google.android.material.carousel.CarouselLayoutManager" />
 
-                <TextView
+                <LinearLayout
                     android:id="@+id/playlistsTV"
-                    style="@style/HomeCategoryTitle"
-                    android:text="@string/playlists" />
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?selectableItemBackground"
+                    android:visibility="gone">
+
+                    <TextView
+                        style="@style/HomeCategoryTitle"
+                        android:text="@string/playlists"
+                        app:drawableEndCompat="@drawable/ic_arrow_right" />
+
+                </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/playlistsRV"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     android:visibility="gone"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                    app:layoutManager="com.google.android.material.carousel.CarouselLayoutManager" />
 
             </LinearLayout>
 

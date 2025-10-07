@@ -2,13 +2,17 @@ package com.github.libretube.ui.preferences
 
 import android.os.Build
 import android.os.Bundle
+import androidx.core.app.ActivityCompat
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import com.github.libretube.R
 import com.github.libretube.constants.PreferenceKeys
+import com.github.libretube.helpers.ImageHelper
 import com.github.libretube.helpers.LocaleHelper
+import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.ui.base.BasePreferenceFragment
 import com.github.libretube.ui.dialogs.RequireRestartDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class GeneralSettings : BasePreferenceFragment() {
     override val titleResourceId: Int = R.string.general
@@ -37,34 +41,44 @@ class GeneralSettings : BasePreferenceFragment() {
                 arrayOf(requireContext().getString(R.string.systemLanguage)) + languages.map { it.second }
             language?.entryValues = arrayOf("sys") + languages.map { it.first }
         } else {
-            // language is set through Android settings
-            language?.isVisible = false
+            // on newer Android versions, the language is set through Android settings
+            // language is the only item in this category, so the whole category should be hidden
+            language?.parent?.isVisible = false
         }
-
-        val region = findPreference<ListPreference>("region")
-        region?.let { setupRegionPref(it) }
 
         val autoRotation = findPreference<ListPreference>(PreferenceKeys.ORIENTATION)
         autoRotation?.setOnPreferenceChangeListener { _, _ ->
             RequireRestartDialog().show(childFragmentManager, RequireRestartDialog::class.java.name)
             true
         }
+
+        val maxImageCache = findPreference<ListPreference>(PreferenceKeys.MAX_IMAGE_CACHE)
+        maxImageCache?.setOnPreferenceChangeListener { _, _ ->
+            ImageHelper.initializeImageLoader(requireContext())
+            true
+        }
+
+        val resetSettings = findPreference<Preference>(PreferenceKeys.RESET_SETTINGS)
+        resetSettings?.setOnPreferenceClickListener {
+            showResetDialog()
+            true
+        }
     }
 
-    private fun setupRegionPref(preference: ListPreference) {
-        val countries = LocaleHelper.getAvailableCountries()
-        val countryNames = countries.map { it.name }
-            .toMutableList()
-        countryNames.add(0, requireContext().getString(R.string.systemLanguage))
+    private fun showResetDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.reset)
+            .setMessage(R.string.reset_message)
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.reset) { _, _ ->
+                // clear default preferences
+                PreferenceHelper.clearPreferences()
 
-        val countryCodes = countries.map { it.code }
-            .toMutableList()
-        countryCodes.add(0, "sys")
+                // clear login token
+                PreferenceHelper.setToken("")
 
-        preference.entries = countryNames.toTypedArray()
-        preference.entryValues = countryCodes.toTypedArray()
-        preference.summaryProvider = Preference.SummaryProvider<ListPreference> {
-            it.entry
-        }
+                ActivityCompat.recreate(requireActivity())
+            }
+            .show()
     }
 }

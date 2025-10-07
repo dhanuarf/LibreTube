@@ -14,7 +14,6 @@ import com.github.libretube.extensions.TAG
 import com.github.libretube.extensions.toastFromMainDispatcher
 import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.repo.FeedProgress
-import com.github.libretube.util.deArrow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -24,8 +23,6 @@ class SubscriptionsViewModel : ViewModel() {
     var subscriptions = MutableLiveData<List<Subscription>?>()
     val feedProgress = MutableLiveData<FeedProgress?>()
 
-    var isCurrentTabSubChannels = false
-    var subChannelsRecyclerViewState: Parcelable? = null
     var subFeedRecyclerViewState: Parcelable? = null
 
     fun fetchFeed(context: Context, forceRefresh: Boolean) {
@@ -33,7 +30,7 @@ class SubscriptionsViewModel : ViewModel() {
             val videoFeed = try {
                 SubscriptionHelper.getFeed(forceRefresh = forceRefresh) { feedProgress ->
                     this@SubscriptionsViewModel.feedProgress.postValue(feedProgress)
-                }.let { runCatching { it.deArrow() }.getOrDefault(it) }
+                }
             } catch (e: Exception) {
                 context.toastFromMainDispatcher(R.string.server_error)
                 Log.e(TAG(), e.toString())

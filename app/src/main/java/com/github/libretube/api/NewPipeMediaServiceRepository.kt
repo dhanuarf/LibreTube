@@ -52,6 +52,7 @@ import org.schabi.newpipe.extractor.services.youtube.extractors.YoutubeStreamExt
 import org.schabi.newpipe.extractor.stream.AudioStream
 import org.schabi.newpipe.extractor.stream.StreamInfo
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
+import org.schabi.newpipe.extractor.stream.StreamInfoItem.ContentAvailability
 import org.schabi.newpipe.extractor.stream.VideoStream
 
 
@@ -119,7 +120,7 @@ fun StreamInfoItem.toStreamItem(
 }
 
 fun InfoItem.toContentItem() = when (this) {
-    is StreamInfoItem -> ContentItem(
+    is StreamInfoItem -> if (contentAvailability == ContentAvailability.AVAILABLE || contentAvailability == ContentAvailability.UPCOMING) ContentItem(
         url = url.toID(),
         type = TYPE_STREAM,
         thumbnail = thumbnails.maxByOrNull { it.height }?.url.orEmpty(),
@@ -133,7 +134,7 @@ fun InfoItem.toContentItem() = when (this) {
         shortDescription = shortDescription,
         verified = isUploaderVerified,
         duration = duration
-    )
+    ) else null
 
     is ChannelInfoItem -> ContentItem(
         url = url.toID(),

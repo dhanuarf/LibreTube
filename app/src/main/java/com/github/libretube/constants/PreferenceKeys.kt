@@ -12,6 +12,7 @@ object PreferenceKeys {
     // General
     const val LANGUAGE = "language"
     const val REGION = "region"
+    const val TRENDING_CATEGORY = "trending_category"
     const val ORIENTATION = "orientation"
     const val NAVBAR_ITEMS = "navbar_items"
     const val START_FRAGMENT = "start_fragment"
@@ -26,8 +27,6 @@ object PreferenceKeys {
     const val GRID_COLUMNS_LANDSCAPE = "grid_landscape"
     const val LABEL_VISIBILITY = "label_visibility"
     const val APP_ICON = "icon_change"
-    const val LEGACY_SUBSCRIPTIONS = "legacy_subscriptions"
-    const val LEGACY_SUBSCRIPTIONS_COLUMNS = "legacy_subscriptions_columns"
     const val NEW_VIDEOS_BADGE = "new_videos_badge"
     const val PLAYLISTS_ORDER = "playlists_order"
     const val PLAYLIST_SORT_ORDER = "playlist_sort_order"
@@ -123,7 +122,6 @@ object PreferenceKeys {
     const val CLEAR_WATCH_POSITIONS = "clear_watch_positions"
     const val SHARE_WITH_TIME_CODE = "share_with_time_code"
     const val SELECTED_SHARE_HOST = "selected_share_host"
-    const val CONFIRM_UNSUBSCRIBE = "confirm_unsubscribing"
     const val CLEAR_BOOKMARKS = "clear_bookmarks"
     const val MAX_CONCURRENT_DOWNLOADS = "max_parallel_downloads"
     const val EXTERNAL_DOWNLOAD_PROVIDER = "external_download_provider"
@@ -131,10 +129,10 @@ object PreferenceKeys {
     const val FULL_LOCAL_MODE = "full_local_mode"
     const val LOCAL_RYD = "local_return_youtube_dislikes"
     const val LOCAL_STREAM_EXTRACTION = "local_stream_extraction"
+    const val INCLUDE_TIMESTAMP_IN_BACKUP_FILENAME = "include_timestamp_in_filename"
 
     // History
     const val WATCH_HISTORY_SIZE = "watch_history_size"
-    const val SELECTED_HISTORY_TYPE_FILTER = "filter_history_type"
     const val SELECTED_HISTORY_STATUS_FILTER = "filter_history_status"
 
     // Internally saved data / not a preference

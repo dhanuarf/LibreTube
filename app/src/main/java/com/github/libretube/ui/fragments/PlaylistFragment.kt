@@ -11,6 +11,7 @@ import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.core.view.setPadding
 import androidx.core.view.updatePadding
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -46,7 +47,6 @@ import com.github.libretube.ui.models.CommonPlayerViewModel
 import com.github.libretube.ui.sheets.BaseBottomSheet
 import com.github.libretube.ui.sheets.PlaylistOptionsBottomSheet
 import com.github.libretube.util.PlayingQueue
-import com.github.libretube.util.deArrow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -145,8 +145,13 @@ class PlaylistFragment : DynamicLayoutManagerFragment(R.layout.fragment_playlist
             playlistName = response.name
             isLoading = false
 
-            if (!response.thumbnailUrl.isNullOrEmpty())
+            if (!response.thumbnailUrl.isNullOrEmpty()) {
                 ImageHelper.loadImage(response.thumbnailUrl, binding.thumbnail)
+            } else {
+                binding.thumbnail.setImageResource(R.drawable.ic_empty_playlist)
+                binding.thumbnail.setPadding(64f.dpToPx())
+                binding.thumbnail.setBackgroundColor(com.google.android.material.R.attr.colorSurface)
+            }
             binding.playlistProgress.isGone = true
             binding.playlistAppBar.isVisible = true
             binding.playlistRecView.isVisible = true
@@ -247,21 +252,21 @@ class PlaylistFragment : DynamicLayoutManagerFragment(R.layout.fragment_playlist
                 }
 
                 if (playlistFeed.isEmpty()) {
-                    binding.sortContainer.isGone = true
+                    binding.sortBTN.isGone = true
                 } else {
-                    binding.sortContainer.isVisible = true
-                    binding.sortContainer.setOnClickListener {
+                    binding.sortBTN.isVisible = true
+                    binding.sortBTN.setOnClickListener {
                         BaseBottomSheet().apply {
                             setSimpleItems(sortOptions.toList()) { index ->
                                 selectedSortOrder = index
-                                binding.sortTV.text = sortOptions[index]
+                                binding.sortBTN.text = sortOptions[index]
                                 showPlaylistVideos(response)
                             }
                         }.show(childFragmentManager)
                     }
                 }
 
-                binding.sortTV.text = sortOptions[selectedSortOrder]
+                binding.sortBTN.text = sortOptions[selectedSortOrder]
 
             }
 
@@ -392,9 +397,7 @@ class PlaylistFragment : DynamicLayoutManagerFragment(R.layout.fragment_playlist
             val response = try {
                 withContext(Dispatchers.IO) {
                     // load locally stored playlists with the auth api
-                    MediaServiceRepository.instance.getPlaylistNextPage(playlistId, nextPage!!).apply {
-                        relatedStreams = relatedStreams.deArrow()
-                    }
+                    MediaServiceRepository.instance.getPlaylistNextPage(playlistId, nextPage!!)
                 }
             } catch (e: Exception) {
                 context?.toastFromMainDispatcher(e.localizedMessage.orEmpty())

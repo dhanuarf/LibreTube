@@ -4,8 +4,10 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -28,7 +30,6 @@ import com.github.libretube.ui.extensions.addOnBottomReachedListener
 import com.github.libretube.ui.extensions.setupFragmentAnimation
 import com.github.libretube.ui.models.CommonPlayerViewModel
 import com.github.libretube.ui.models.WatchHistoryModel
-import com.github.libretube.ui.sheets.BaseBottomSheet
 import com.github.libretube.util.PlayingQueue
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
@@ -55,8 +56,11 @@ class WatchHistoryFragment : DynamicLayoutManagerFragment(R.layout.fragment_watc
         _binding = FragmentWatchHistoryBinding.bind(view)
         super.onViewCreated(view, savedInstanceState)
 
-        commonPlayerViewModel.isMiniPlayerVisible.observe(viewLifecycleOwner) {
-            _binding?.watchHistoryRecView?.updatePadding(bottom = if (it) 64f.dpToPx() else 0)
+        commonPlayerViewModel.isMiniPlayerVisible.observe(viewLifecycleOwner) { isMiniPlayerVisible ->
+            _binding?.watchHistoryRecView?.updatePadding(bottom = if (isMiniPlayerVisible) 64f.dpToPx() else 0)
+            _binding?.playAll?.updateLayoutParams<MarginLayoutParams> {
+                bottomMargin = (if (isMiniPlayerVisible) 64f else 16f).dpToPx()
+            }
         }
 
         binding.watchHistoryRecView.setOnDismissListener { position ->
@@ -86,10 +90,8 @@ class WatchHistoryFragment : DynamicLayoutManagerFragment(R.layout.fragment_watc
             }
         })
 
-        binding.filterTypeTV.text =
-            resources.getStringArray(R.array.filterOptions)[viewModel.selectedTypeFilter]
-        binding.filterStatusTV.text =
-            resources.getStringArray(R.array.filterStatusOptions)[viewModel.selectedStatusFilter]
+        binding.chipContinue.isChecked = viewModel.selectedStatusFilter in arrayOf(0, 1)
+        binding.chipFinished.isChecked = viewModel.selectedStatusFilter in arrayOf(0, 2)
 
         val watchPositionItem = arrayOf(getString(R.string.also_clear_watch_positions))
         val selected = booleanArrayOf(false)
@@ -103,6 +105,10 @@ class WatchHistoryFragment : DynamicLayoutManagerFragment(R.layout.fragment_watc
                 .setPositiveButton(R.string.okay) { _, _ ->
                     binding.watchHistoryRecView.isGone = true
                     binding.historyEmpty.isVisible = true
+                    binding.clear.isVisible = true
+                    binding.playAll.isGone = true
+                    binding.statusFilterChips.isGone = true
+
                     lifecycleScope.launch(Dispatchers.IO) {
                         Database.withTransaction {
                             Database.watchHistoryDao().deleteAll()
@@ -114,26 +120,15 @@ class WatchHistoryFragment : DynamicLayoutManagerFragment(R.layout.fragment_watc
                 .show()
         }
 
-        binding.filterTypeTV.setOnClickListener {
-            val filterOptions = resources.getStringArray(R.array.filterOptions)
-
-            BaseBottomSheet().apply {
-                setSimpleItems(filterOptions.toList()) { index ->
-                    binding.filterTypeTV.text = filterOptions[index]
-                    viewModel.selectedTypeFilter = index
-                }
-            }.show(childFragmentManager)
-        }
-
-        binding.filterStatusTV.setOnClickListener {
-            val filterOptions = resources.getStringArray(R.array.filterStatusOptions)
-
-            BaseBottomSheet().apply {
-                setSimpleItems(filterOptions.toList()) { index ->
-                    binding.filterStatusTV.text = filterOptions[index]
-                    viewModel.selectedStatusFilter = index
-                }
-            }.show(childFragmentManager)
+        binding.statusFilterChips.setOnCheckedStateChangeListener { _, checkedIds ->
+            val continueWatchingEnabled = checkedIds.contains(binding.chipContinue.id)
+            val finishedEnabled = checkedIds.contains(binding.chipFinished.id)
+            viewModel.selectedStatusFilter = when {
+                continueWatchingEnabled && finishedEnabled -> 0
+                continueWatchingEnabled -> 1
+                finishedEnabled -> 2
+                else -> 0
+            }
         }
 
         binding.playAll.setOnClickListener {
@@ -152,8 +147,9 @@ class WatchHistoryFragment : DynamicLayoutManagerFragment(R.layout.fragment_watc
 
         viewModel.filteredWatchHistory.observe(viewLifecycleOwner) { history ->
             binding.historyEmpty.isGone = history.isNotEmpty()
-            binding.playAll.isEnabled = history.isNotEmpty()
             binding.watchHistoryRecView.isVisible = history.isNotEmpty()
+            binding.clear.isVisible = history.isNotEmpty()
+            binding.playAll.isVisible = history.isNotEmpty()
 
             watchHistoryAdapter.submitList(history)
         }

@@ -33,7 +33,6 @@ import androidx.core.graphics.drawable.toDrawable
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.core.os.postDelayed
-import androidx.core.view.SoftwareKeyboardControllerCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
@@ -60,13 +59,13 @@ import com.github.libretube.api.obj.Subtitle
 import com.github.libretube.compat.PictureInPictureCompat
 import com.github.libretube.compat.PictureInPictureParamsCompat
 import com.github.libretube.constants.IntentData
-import com.github.libretube.constants.PreferenceKeys
 import com.github.libretube.databinding.FragmentPlayerBinding
 import com.github.libretube.db.DatabaseHolder
 import com.github.libretube.enums.PlayerCommand
 import com.github.libretube.enums.PlayerEvent
 import com.github.libretube.enums.SbSkipOptions
 import com.github.libretube.enums.ShareObjectType
+import com.github.libretube.extensions.anyChildFocused
 import com.github.libretube.extensions.formatShort
 import com.github.libretube.extensions.parcelable
 import com.github.libretube.extensions.serializableExtra
@@ -81,7 +80,6 @@ import com.github.libretube.helpers.NavBarHelper
 import com.github.libretube.helpers.NavigationHelper
 import com.github.libretube.helpers.PlayerHelper
 import com.github.libretube.helpers.PlayerHelper.getCurrentSegment
-import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.helpers.ProxyHelper
 import com.github.libretube.helpers.ThemeHelper
 import com.github.libretube.helpers.WindowHelper
@@ -142,14 +140,14 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
 
     // data and objects stored for the player
     private lateinit var streams: Streams
-    val isShort
-        get() = run {
-            val heightGreaterThanWidth =
-                ::streams.isInitialized && streams.videoStreams.firstOrNull()?.let {
-                    (it.height ?: 0) > (it.width ?: 0)
-                } == true
+    val isShort: Boolean
+        get() {
+            if (PlayingQueue.getCurrent()?.isShort == true) return true
+            if (!::playerController.isInitialized) return false
 
-            PlayingQueue.getCurrent()?.isShort == true || heightGreaterThanWidth
+            val currentVideoFormat = PlayerHelper.getCurrentVideoFormat(playerController)
+                ?: return false
+            return currentVideoFormat.height > currentVideoFormat.width
         }
 
     // if null, it's been set to automatic
@@ -267,6 +265,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
             }
         }
 
+        var fullscreenOnShortsAlreadyDone = false
         override fun onPlaybackStateChanged(playbackState: Int) {
             // set the playback speed to one if having reached the end of a livestream
             if (playbackState == Player.STATE_BUFFERING && binding.player.isLive &&
@@ -278,7 +277,10 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
             // check if video has ended, next video is available and autoplay is enabled/the video is part of a played playlist.
             if (playbackState == Player.STATE_ENDED) {
                 playerBackgroundBinding.sbSkipBtn.isGone = true
-                if (PlayerHelper.isAutoPlayEnabled(playlistId != null) && autoPlayCountdownEnabled) {
+
+                // if the current tracks are empty, the player is transitioning at the moment
+                val isTransitioning = playerController.currentTracks.isEmpty
+                if (PlayerHelper.isAutoPlayEnabled(playlistId != null) && autoPlayCountdownEnabled && !isTransitioning) {
                     showAutoPlayCountdown()
                 } else {
                     binding.player.showControllerPermanently()
@@ -305,6 +307,15 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
             } else {
                 bufferingTimeoutTask?.let { handler.removeCallbacks(it) }
             }
+
+            if (playbackState == Player.STATE_READY && binding.playerMotionLayout.progress == 0f) {
+                if (PlayerHelper.autoFullscreenShortsEnabled && isShort && !fullscreenOnShortsAlreadyDone) {
+                    setFullscreen()
+                    fullscreenOnShortsAlreadyDone = true
+                }
+            }
+
+            if (playbackState == Player.STATE_ENDED) fullscreenOnShortsAlreadyDone = false
 
             super.onPlaybackStateChanged(playbackState)
         }
@@ -406,7 +417,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentPlayerBinding.bind(view)
         super.onViewCreated(view, savedInstanceState)
-        SoftwareKeyboardControllerCompat(view).hide()
 
         // manually apply additional padding for edge-to-edge compatibility
         activity?.getSystemInsets()?.let { systemBars ->
@@ -607,6 +617,11 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
                     commonPlayerViewModel.setSheetExpand(true)
                     mainMotionLayout.progress = 0F
                     changeOrientationMode()
+
+                    // clear search bar focus to avoid keyboard popups
+                    with(mainActivity.searchView) {
+                        if (anyChildFocused()) clearFocus()
+                    }
                 } else if (currentId == transitionEndId) {
                     commonPlayerViewModel.isMiniPlayerVisible.value = true
                     // disable captions temporarily
@@ -1140,12 +1155,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
         dismissCommentsSheet()
 
         setPlayerDefaults()
-
-        if (PreferenceHelper.getBoolean(PreferenceKeys.AUTO_FULLSCREEN_SHORTS, false) &&
-            isShort && binding.playerMotionLayout.progress == 0f
-        ) {
-            setFullscreen()
-        }
 
         binding.player.apply {
             useController = false

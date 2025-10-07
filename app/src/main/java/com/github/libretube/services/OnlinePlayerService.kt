@@ -35,9 +35,9 @@ import com.github.libretube.helpers.PlayerHelper.getSubtitleRoleFlags
 import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.helpers.ProxyHelper
 import com.github.libretube.parcelable.PlayerData
+import com.github.libretube.util.DeArrowUtil
 import com.github.libretube.util.PlayingQueue
 import com.github.libretube.util.YoutubeHlsPlaylistParser
-import com.github.libretube.util.deArrow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -107,7 +107,7 @@ open class OnlinePlayerService : AbstractPlayerService() {
         isAudioOnlyPlayer = args.getBoolean(IntentData.audioOnly)
 
         // get the intent arguments
-        setVideoId(playerData.videoId)
+        this.videoId = playerData.videoId
         playlistId = playerData.playlistId
         channelId = playerData.channelId
         startTimestampSeconds = playerData.timestamp
@@ -128,7 +128,9 @@ open class OnlinePlayerService : AbstractPlayerService() {
 
         streams = withContext(Dispatchers.IO) {
             try {
-                MediaServiceRepository.instance.getStreams(videoId).deArrow(videoId)
+                MediaServiceRepository.instance.getStreams(videoId).let {
+                    DeArrowUtil.deArrowStreams(it, videoId)
+                }
             }  catch (e: Exception) {
                 Log.e(TAG(), e.stackTraceToString())
                 toastFromMainDispatcher(e.localizedMessage.orEmpty())
@@ -136,20 +138,13 @@ open class OnlinePlayerService : AbstractPlayerService() {
             }
         } ?: return
 
-        if (PlayingQueue.isEmpty()) {
-            PlayingQueue.updateQueue(
-                streams!!.toStreamItem(videoId),
-                playlistId,
-                channelId,
-                streams!!.relatedStreams
-            )
-        } else if (PlayingQueue.isLast() && playlistId == null && channelId == null) {
-            PlayingQueue.insertRelatedStreams(streams!!.relatedStreams)
-        }
-
         streams?.toStreamItem(videoId)?.let {
             // save the current stream to the queue
             PlayingQueue.updateCurrent(it)
+
+            if (!PlayingQueue.hasNext()) {
+                PlayingQueue.updateQueue(it, playlistId, channelId, streams!!.relatedStreams)
+            }
 
             // update feed item with newer information, e.g. more up-to-date views
             SubscriptionHelper.submitFeedItemChange(
@@ -197,11 +192,7 @@ open class OnlinePlayerService : AbstractPlayerService() {
         val nextVideo = nextId ?: PlayingQueue.getNext() ?: return
 
         // play new video on background
-        setVideoId(nextVideo)
-
-        scope.launch {
-            startPlayback()
-        }
+        navigateVideo(nextVideo)
     }
 
     /**
@@ -259,11 +250,11 @@ open class OnlinePlayerService : AbstractPlayerService() {
         }
     }
 
-    override fun setVideoId(videoId: String) {
-        super.setVideoId(videoId)
-
+    override fun navigateVideo(videoId: String) {
         this.streams = null
         this.sponsorBlockSegments = emptyList()
+
+        super.navigateVideo(videoId)
     }
 
     /**

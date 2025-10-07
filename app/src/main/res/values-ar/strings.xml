@@ -34,7 +34,7 @@
     <string name="deletePlaylist">حذف قائمة التشغيل</string>
     <string name="areYouSure">حذف قائمة التشغيل؟</string>
     <string name="createPlaylist">إنشاء قائمة تشغيل</string>
-    <string name="playlistCreated">تم إنشاء قائمة التشغيل.</string>
+    <string name="playlistCreated">أُنشئت قائمة التشغيل.</string>
     <string name="playlistName">اسم قائمة التشغيل</string>
     <string name="success">انتهى.</string>
     <string name="fail">فشل ذريع :(</string>
@@ -200,7 +200,7 @@
     <string name="data_saver_mode_summary">تخطي الصور المصغرة والصور الأخرى</string>
     <string name="history_summary">سجل المشاهدة والبحث</string>
     <string name="general">عام</string>
-    <string name="general_summary">اللغة والمنطقة</string>
+    <string name="general_summary">التنزيلات وحافظ البطرية</string>
     <string name="playingOnBackground">قيد التشغيل في الخلفية…</string>
     <string name="caption_settings">التسميات التوضيحية</string>
     <string name="playerAudioFormat">تنسيق الصوت للمشغل</string>
@@ -250,7 +250,6 @@
     <string name="copied_to_clipboard">تم نسخها إلى الحافظة</string>
     <string name="maximum_image_cache">الحد الأقصى لحجم ذاكرة التخزين المؤقت للصور</string>
     <string name="open_copied">فتح</string>
-    <string name="legacy_subscriptions">طريقة عرض الاشتراكات القديمة</string>
     <string name="device_info">معلومات الجهاز</string>
     <string name="audio_video_summary">الجودة والشكل</string>
     <string name="delete">حذف من التنزيلات</string>
@@ -568,4 +567,6 @@
     <string name="podcasts">بودكاست</string>
     <string name="trailers">الرائجة</string>
     <string name="music">الموسيقى</string>
+    <string name="createNewPlaylist">أنشئ قائمة تشغيل جديدة</string>
+    <string name="include_timestamp_in_filename">ضمّن الطابع الزمني في اسم الملف</string>
 </resources>

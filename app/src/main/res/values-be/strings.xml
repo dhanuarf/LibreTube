@@ -251,7 +251,6 @@
     <string name="maximum_image_cache">Максімальны памер кэша малюнкаў</string>
     <string name="copied_to_clipboard">Скапіравана ў буфер абмену</string>
     <string name="open_copied">Адкрыты</string>
-    <string name="legacy_subscriptions">Састарэлы выгляд падпісак</string>
     <string name="device_info">Інфармацыя пра прыладу</string>
     <string name="audio_video_summary">Якасць і фармат</string>
     <string name="delete">Выдаліць з загрузак</string>
@@ -561,4 +560,10 @@
     <string name="full_local_mode_desc">Працаваць непасрэдна з YouTube, не выкарыстоўваючы Piped.</string>
     <string name="authentication">Аўтэнтыфікацыя</string>
     <string name="updating_feed">Абнаўленне стужкі…</string>
+    <string name="createNewPlaylist">Стварыць новы плэйліст</string>
+    <string name="playback_pitch_semitone_error_input">Значэнне павінна быць у дыяпазоне ад -%1$.1f (мінімум) да %1$.1f (максімум)</string>
+    <string name="gaming">Гульні</string>
+    <string name="podcasts">Падкасты</string>
+    <string name="trailers">Трэйлеры</string>
+    <string name="music">Музыка</string>
 </resources>
