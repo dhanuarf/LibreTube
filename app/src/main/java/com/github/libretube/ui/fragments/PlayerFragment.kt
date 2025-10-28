@@ -638,10 +638,8 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
                     mainMotionLayout.progress = 0F
                     changeOrientationMode()
 
-                    // clear search bar focus to avoid keyboard popups
-                    with(mainActivity.searchView) {
-                        if (anyChildFocused()) clearFocus()
-                    }
+                    // disable search bar focus to avoid keyboard popups
+                    mainActivity.searchView.focusable = View.NOT_FOCUSABLE
                 } else if (currentId == transitionEndId) {
                     commonPlayerViewModel.isMiniPlayerVisible.value = true
                     // disable captions temporarily
@@ -653,6 +651,8 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
                         mainMotionLayout.progress = 1F
                     }
                     (activity as MainActivity).requestOrientationChange()
+                    mainActivity.searchView.focusable = View.FOCUSABLE
+
                 }
 
                 updateMaxSheetHeight()
