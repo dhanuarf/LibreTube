@@ -19,14 +19,11 @@ import com.github.libretube.constants.PreferenceKeys.HOME_TAB_CONTENT
 import com.github.libretube.databinding.FragmentHomeBinding
 import com.github.libretube.db.DatabaseHelper
 import com.github.libretube.db.obj.PlaylistBookmark
-import com.github.libretube.helpers.LocaleHelper
-import com.github.libretube.helpers.NavBarHelper
 import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.ui.activities.SettingsActivity
 import com.github.libretube.ui.adapters.CarouselPlaylist
 import com.github.libretube.ui.adapters.CarouselPlaylistAdapter
 import com.github.libretube.ui.adapters.VideoCardsAdapter
-import com.github.libretube.ui.extensions.setupFragmentAnimation
 import com.github.libretube.ui.models.HomeViewModel
 import com.github.libretube.ui.models.SubscriptionsViewModel
 import com.github.libretube.ui.models.TrendsViewModel
@@ -116,24 +113,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         binding.trendingRegion.setOnClickListener {
-            val currentRegionPref = PreferenceHelper.getTrendingRegion(requireContext())
-
-            val countries = LocaleHelper.getAvailableCountries()
-            var selected = countries.indexOfFirst { it.code == currentRegionPref }
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.region)
-                .setSingleChoiceItems(
-                    countries.map { it.name }.toTypedArray(),
-                    selected
-                ) { _, checked ->
-                    selected = checked
-                }
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.okay) { _, _ ->
-                    PreferenceHelper.putString(PreferenceKeys.REGION, countries[selected].code)
-                    fetchHomeFeed()
-                }
-                .show()
+            TrendsFragment.showChangeRegionDialog(requireContext()) {
+                fetchHomeFeed()
+            }
         }
 
         val trendingCategories = MediaServiceRepository.instance.getTrendingCategories()
@@ -141,21 +123,28 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.trendingCategory.setOnClickListener {
             val currentTrendingCategoryPref = PreferenceHelper.getString(
                 PreferenceKeys.TRENDING_CATEGORY,
-                TrendingCategory.TRENDING.name
-            ).let { TrendingCategory.valueOf(it) }
+                TrendingCategory.LIVE.name
+            ).let { categoryName -> trendingCategories.first { it.name == categoryName } }
 
             val categories = trendingCategories.map { category ->
-                category to getString(TrendsFragment.categoryNamesToStringRes[category]!!)
+                category to getString(category.titleRes)
             }
-            var selected = TrendingCategory.entries.indexOf(currentTrendingCategoryPref)
+
+            var selected = trendingCategories.indexOf(currentTrendingCategoryPref)
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.category)
-                .setSingleChoiceItems(categories.map { it.second }.toTypedArray(), selected) { _, checked ->
+                .setSingleChoiceItems(
+                    categories.map { it.second }.toTypedArray(),
+                    selected
+                ) { _, checked ->
                     selected = checked
                 }
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.okay) { _, _ ->
-                    PreferenceHelper.putString(PreferenceKeys.TRENDING_CATEGORY, TrendingCategory.entries[selected].name)
+                    PreferenceHelper.putString(
+                        PreferenceKeys.TRENDING_CATEGORY,
+                        trendingCategories[selected].name
+                    )
                     fetchHomeFeed()
                 }
                 .show()
@@ -168,17 +157,18 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.changeInstance.setOnClickListener {
             redirectToIntentSettings()
         }
-
-        if (NavBarHelper.getStartFragmentId(requireContext()) != R.id.homeFragment) {
-            setupFragmentAnimation(binding.root)
-        }
     }
 
     override fun onResume() {
         super.onResume()
 
-        // Avoid re-fetching when re-entering the screen if it was loaded successfully
-        if (homeViewModel.loadedSuccessfully.value == false) {
+        // Avoid re-fetching when re-entering the screen if it was loaded successfully, except when
+        // the value of trending region has changed
+        val isTrendingRegionChanged = homeViewModel.trending.value?.let {
+            it.second.region != PreferenceHelper.getTrendingRegion(requireContext())
+        } == true
+
+        if (homeViewModel.loadedSuccessfully.value == false || isTrendingRegionChanged) {
             fetchHomeFeed()
         }
     }
@@ -201,15 +191,20 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         )
     }
 
-    private fun showTrending(streamItems: List<StreamItem>?) {
-        if (streamItems == null) return
+    private fun showTrending(trends: Pair<TrendingCategory, TrendsViewModel.TrendingStreams>?) {
+        if (trends == null) return
+        val (category, trendingStreams) = trends
 
         // cache the loaded trends in the [TrendsViewModel] so that the trends don't need to be
         // reloaded there
-        trendsViewModel.setStreamsForCategory(TrendingCategory.TRENDING, streamItems)
+        val region = PreferenceHelper.getTrendingRegion(requireContext())
+        trendsViewModel.setStreamsForCategory(
+            category,
+            TrendsViewModel.TrendingStreams(region, trendingStreams.streams)
+        )
 
         makeVisible(binding.trendingRV, binding.trendingTV)
-        trendingAdapter.submitList(streamItems.take(10))
+        trendingAdapter.submitList(trendingStreams.streams.take(10))
     }
 
     private fun showFeed(streamItems: List<StreamItem>?) {
@@ -268,6 +263,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun showLoading() {
         binding.progress.isVisible = !binding.refresh.isRefreshing
         binding.nothingHere.isVisible = false
+        binding.scroll.alpha = 0.3f
     }
 
     private fun hideLoading() {
@@ -280,6 +276,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         } else {
             showNothingHere()
         }
+        binding.scroll.alpha = 1.0f
     }
 
     private fun showNothingHere() {

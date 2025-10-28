@@ -25,7 +25,7 @@ import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.ui.activities.MainActivity
 import com.github.libretube.ui.adapters.SearchResultsAdapter
 import com.github.libretube.ui.base.DynamicLayoutManagerFragment
-import com.github.libretube.ui.extensions.setupFragmentAnimation
+import com.github.libretube.ui.extensions.setOnBackPressed
 import com.github.libretube.ui.models.SearchResultViewModel
 import com.github.libretube.util.TextUtils.toTimeInSeconds
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +39,7 @@ class SearchResultFragment : DynamicLayoutManagerFragment(R.layout.fragment_sear
     private val args by navArgs<SearchResultFragmentArgs>()
     private val viewModel by viewModels<SearchResultViewModel>()
 
+    private val mainActivity get() = activity as MainActivity
     private var recyclerViewState: Parcelable? = null
 
     override fun setLayoutManagers(gridItems: Int) {
@@ -51,7 +52,7 @@ class SearchResultFragment : DynamicLayoutManagerFragment(R.layout.fragment_sear
 
         // fixes a bug that the search query will stay the old one when searching for multiple
         // different queries in a row and navigating to the previous ones through back presses
-        (context as MainActivity).setQuerySilent(args.query)
+        mainActivity.setQuerySilent(args.query)
 
         // add the query to the history
         addToHistory(args.query)
@@ -83,7 +84,7 @@ class SearchResultFragment : DynamicLayoutManagerFragment(R.layout.fragment_sear
         binding.searchRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                recyclerViewState = binding.searchRecycler.layoutManager?.onSaveInstanceState()
+                recyclerViewState = recyclerView.layoutManager?.onSaveInstanceState()
             }
         })
 
@@ -105,7 +106,24 @@ class SearchResultFragment : DynamicLayoutManagerFragment(R.layout.fragment_sear
             }
         }
 
-        setupFragmentAnimation(binding.root) {
+        viewModel.searchSuggestion.observe(viewLifecycleOwner) { suggestion ->
+            binding.searchSuggestionContainer.isVisible = suggestion != null
+            binding.searchSuggestionContainer.setOnClickListener(null)
+            if (suggestion == null) return@observe
+
+            val (suggestion, corrected) = suggestion
+            binding.searchSuggestion.text = suggestion
+            binding.searchSuggestionLabel.text = if (corrected) {
+                getString(R.string.showing_results_for)
+            } else {
+                binding.searchSuggestionContainer.setOnClickListener {
+                    mainActivity.searchView.setQuery(suggestion, true)
+                }
+                getString(R.string.did_you_mean)
+            }
+        }
+
+        setOnBackPressed {
             findNavController().popBackStack(R.id.searchFragment, true) ||
                     findNavController().popBackStack()
         }

@@ -52,7 +52,7 @@ import org.schabi.newpipe.extractor.services.youtube.extractors.YoutubeStreamExt
 import org.schabi.newpipe.extractor.stream.AudioStream
 import org.schabi.newpipe.extractor.stream.StreamInfo
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
-import org.schabi.newpipe.extractor.stream.StreamInfoItem.ContentAvailability
+import org.schabi.newpipe.extractor.stream.ContentAvailability
 import org.schabi.newpipe.extractor.stream.VideoStream
 
 
@@ -108,7 +108,7 @@ fun StreamInfoItem.toStreamItem(
             ?.toLocalDate()
             ?.toString(),
         uploaderName = uploaderName,
-        uploaderUrl = uploaderUrl.toID(),
+        uploaderUrl = uploaderUrl?.toID(),
         uploaderAvatar = uploaderAvatarUrl ?: uploaderAvatars.maxByOrNull { it.height }?.url,
         thumbnail = thumbnails.maxByOrNull { it.height }?.url,
         duration = duration,
@@ -120,7 +120,12 @@ fun StreamInfoItem.toStreamItem(
 }
 
 fun InfoItem.toContentItem() = when (this) {
-    is StreamInfoItem -> if (contentAvailability == ContentAvailability.AVAILABLE || contentAvailability == ContentAvailability.UPCOMING) ContentItem(
+    is StreamInfoItem -> if (contentAvailability in arrayOf(
+            ContentAvailability.AVAILABLE,
+            ContentAvailability.UPCOMING,
+            ContentAvailability.UNKNOWN
+        )
+    ) ContentItem(
         url = url.toID(),
         type = TYPE_STREAM,
         thumbnail = thumbnails.maxByOrNull { it.height }?.url.orEmpty(),
@@ -246,15 +251,18 @@ class NewPipeMediaServiceRepository : MediaServiceRepository {
     }
 
     // see https://github.com/TeamNewPipe/NewPipeExtractor/tree/dev/extractor/src/main/java/org/schabi/newpipe/extractor/services/youtube/extractors/kiosk
-    private val trendingCategories = mapOf(
-        TrendingCategory.TRENDING to "Trending",
-        TrendingCategory.GAMING to "trending_gaming",
-        TrendingCategory.TRAILERS to "trending_movies_and_shows",
-        TrendingCategory.PODCASTS to "trending_podcasts_episodes",
-        TrendingCategory.MUSIC to "trending_music",
-        TrendingCategory.LIVE to "live"
-    )
-    override fun getTrendingCategories(): List<TrendingCategory> = trendingCategories.keys.toList()
+    private val trendingCategories = TrendingCategory.entries.associate {
+        when (it) {
+            TrendingCategory.GAMING -> it to "trending_gaming"
+            TrendingCategory.TRAILERS -> it to "trending_movies_and_shows"
+            TrendingCategory.PODCASTS -> it to "trending_podcasts_episodes"
+            TrendingCategory.MUSIC -> it to "trending_music"
+            TrendingCategory.LIVE -> it to "live"
+        }
+    }
+
+    override fun getTrendingCategories(): List<TrendingCategory> =
+        trendingCategories.keys.toList()
 
     override suspend fun getTrending(region: String, category: TrendingCategory): List<StreamItem> {
         val kioskList = NewPipeExtractorInstance.extractor.kioskList
@@ -382,7 +390,9 @@ class NewPipeMediaServiceRepository : MediaServiceRepository {
 
         return SearchResult(
             items = searchInfo.relatedItems.mapNotNull { it.toContentItem() },
-            nextpage = searchInfo.nextPage?.toNextPageString()
+            nextpage = searchInfo.nextPage?.toNextPageString(),
+            suggestion = searchInfo.searchSuggestion,
+            corrected = searchInfo.isCorrectedSearch
         )
     }
 

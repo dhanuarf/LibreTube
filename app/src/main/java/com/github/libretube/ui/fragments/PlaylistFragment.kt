@@ -42,7 +42,6 @@ import com.github.libretube.ui.adapters.PlaylistAdapter
 import com.github.libretube.ui.base.BaseActivity
 import com.github.libretube.ui.base.DynamicLayoutManagerFragment
 import com.github.libretube.ui.extensions.addOnBottomReachedListener
-import com.github.libretube.ui.extensions.setupFragmentAnimation
 import com.github.libretube.ui.models.CommonPlayerViewModel
 import com.github.libretube.ui.sheets.BaseBottomSheet
 import com.github.libretube.ui.sheets.PlaylistOptionsBottomSheet
@@ -108,13 +107,11 @@ class PlaylistFragment : DynamicLayoutManagerFragment(R.layout.fragment_playlist
         binding.playlistRecView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                recyclerViewState = binding.playlistRecView.layoutManager?.onSaveInstanceState()
+                recyclerViewState = recyclerView.layoutManager?.onSaveInstanceState()
             }
         })
 
         fetchPlaylist()
-
-        setupFragmentAnimation(binding.root)
     }
 
     override fun onDestroyView() {

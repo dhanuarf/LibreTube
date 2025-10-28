@@ -566,4 +566,8 @@
     <string name="music">Musik</string>
     <string name="createNewPlaylist">Neue Playlist erstellen</string>
     <string name="include_timestamp_in_filename">Zeitstempel in Dateinamen einfügen</string>
+    <string name="unsubscribe_snackbar_message">%1$s wurde deabonniert</string>
+    <string name="screenshot_saved">Screenshot gespeichert</string>
+    <string name="did_you_mean">Meintest du:</string>
+    <string name="showing_results_for">Ergebnisse für:</string>
 </resources>

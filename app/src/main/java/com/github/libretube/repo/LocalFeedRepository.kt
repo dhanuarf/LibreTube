@@ -20,8 +20,8 @@ import org.schabi.newpipe.extractor.channel.ChannelInfo
 import org.schabi.newpipe.extractor.channel.tabs.ChannelTabInfo
 import org.schabi.newpipe.extractor.channel.tabs.ChannelTabs
 import org.schabi.newpipe.extractor.feed.FeedInfo
+import org.schabi.newpipe.extractor.stream.ContentAvailability
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
-import org.schabi.newpipe.extractor.stream.StreamInfoItem.ContentAvailability
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
@@ -148,7 +148,13 @@ class LocalFeedRepository : FeedRepository {
                 ChannelTabInfo.getInfo(NewPipeExtractorInstance.extractor, tab).relatedItems
             }.getOrElse { emptyList() }
         }.flatten().filterIsInstance<StreamInfoItem>()
-            .filter { it.contentAvailability == ContentAvailability.AVAILABLE || it.contentAvailability == ContentAvailability.UPCOMING }
+            .filter {
+                it.contentAvailability in arrayOf(
+                    ContentAvailability.AVAILABLE,
+                    ContentAvailability.UPCOMING,
+                    ContentAvailability.UNKNOWN
+                )
+            }
 
         val channelAvatar = channelInfo.avatars.maxByOrNull { it.height }?.url
         return related.map { item ->

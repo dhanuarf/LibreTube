@@ -4,9 +4,11 @@ import android.app.NotificationManager
 import android.app.PendingIntent.FLAG_CANCEL_CURRENT
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.net.ConnectivityManager
 import android.net.Network
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import android.util.SparseBooleanArray
@@ -67,7 +69,6 @@ import okhttp3.ResponseBody
 import okio.buffer
 import okio.sink
 import okio.source
-import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -117,7 +118,8 @@ class DownloadService : LifecycleService() {
      */
     fun registerNetworkChangedCallback() {
         val connectivityManager = getSystemService<ConnectivityManager>()
-        connectivityManager?.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+        connectivityManager?.registerDefaultNetworkCallback(object :
+            ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
                 super.onAvailable(network)
 
@@ -255,7 +257,8 @@ class DownloadService : LifecycleService() {
         }
 
         // start the next download if there are any remaining ones enqueued
-        val nextDownload = downloadFlow.firstOrNull { (_, status) -> status == DownloadStatus.Paused }
+        val nextDownload =
+            downloadFlow.firstOrNull { (_, status) -> status == DownloadStatus.Paused }
         if (nextDownload != null) {
             resume(nextDownload.first)
         } else {
@@ -518,12 +521,19 @@ class DownloadService : LifecycleService() {
             .setOnlyAlertOnce(true)
             .setGroupSummary(true)
 
-        startForeground(NotificationId.DOWNLOAD_IN_PROGRESS.id, summaryNotificationBuilder.build())
+        ServiceCompat.startForeground(
+            this, NotificationId.DOWNLOAD_IN_PROGRESS.id, summaryNotificationBuilder.build(),
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            } else {
+                0
+            }
+        )
     }
 
     private fun getNotificationBuilder(item: DownloadItem): Builder {
         val intent = Intent(this@DownloadService, MainActivity::class.java)
-            .putExtra("fragmentToOpen", "downloads")
+            .putExtra(IntentData.OPEN_DOWNLOADS, true)
         val activityIntent = PendingIntentCompat
             .getActivity(this@DownloadService, 0, intent, FLAG_CANCEL_CURRENT, false)
 
@@ -616,7 +626,7 @@ class DownloadService : LifecycleService() {
     }
 
     /**
-     * Get a [File] from the corresponding download directory and the file name
+     * Get a [Path] from the corresponding download directory and the file name
      */
     private fun getDownloadPath(directory: String, fileName: String): Path {
         return DownloadHelper.getDownloadDir(this, directory) / fileName

@@ -111,6 +111,8 @@ import com.github.libretube.util.OnlineTimeFrameReceiver
 import com.github.libretube.util.PlayingQueue
 import com.github.libretube.util.TextUtils
 import com.github.libretube.util.TextUtils.toTimeInSeconds
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -392,11 +394,29 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
                 return@registerForActivityResult
             }
 
-            context?.contentResolver?.openOutputStream(uri)?.use { outputStream ->
-                screenshotBitmap?.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-            }
+            CoroutineScope(Dispatchers.IO).launch{
+                context?.contentResolver?.openOutputStream(uri)?.use { outputStream ->
+                    screenshotBitmap?.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                }
+                screenshotBitmap = null
 
-            screenshotBitmap = null
+                withContext(Dispatchers.Main) {
+                    Snackbar.make(
+                        requireView(),
+                        R.string.screenshot_saved,
+                        2500
+                    ).apply {
+                        setAction(R.string.share) {
+                            startActivity(Intent.createChooser(with(Intent()) {
+                                setAction(Intent.ACTION_SEND)
+                                setType("image/png")
+                                putExtra(Intent.EXTRA_STREAM, uri)
+                            }, null))
+                        }
+                        show()
+                    }
+                }
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -862,7 +882,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
         windowInsetsControllerCompat.isAppearanceLightStatusBars = false
 
         commonPlayerViewModel.isFullscreen.value = true
-
         updateFullscreenOrientation()
 
         commonPlayerViewModel.setSheetExpand(null)

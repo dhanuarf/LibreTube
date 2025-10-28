@@ -3,6 +3,8 @@ package com.github.libretube.services
 import android.app.Notification
 import android.app.NotificationManager
 import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.getSystemService
@@ -16,6 +18,8 @@ import com.github.libretube.api.obj.PipedStream
 import com.github.libretube.api.obj.StreamItem
 import com.github.libretube.constants.IntentData
 import com.github.libretube.db.DatabaseHolder
+import com.github.libretube.db.obj.DownloadPlaylist
+import com.github.libretube.db.obj.DownloadPlaylistVideosCrossRef
 import com.github.libretube.enums.NotificationId
 import com.github.libretube.enums.PlaylistType
 import com.github.libretube.extensions.getWhileDigit
@@ -23,10 +27,13 @@ import com.github.libretube.extensions.serializableExtra
 import com.github.libretube.extensions.toID
 import com.github.libretube.extensions.toastFromMainDispatcher
 import com.github.libretube.helpers.DownloadHelper
+import com.github.libretube.helpers.ImageHelper
 import com.github.libretube.parcelable.DownloadData
-import com.github.libretube.util.TextUtils
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.nio.file.Path
+import kotlin.io.path.div
 
 class PlaylistDownloadEnqueueService : LifecycleService() {
     private lateinit var nManager: NotificationManager
@@ -44,7 +51,16 @@ class PlaylistDownloadEnqueueService : LifecycleService() {
     override fun onCreate() {
         super.onCreate()
 
-        startForeground(NotificationId.ENQUEUE_PLAYLIST_DOWNLOAD.id, buildNotification())
+        ServiceCompat.startForeground(
+            this,
+            NotificationId.ENQUEUE_PLAYLIST_DOWNLOAD.id,
+            buildNotification(),
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            } else {
+                0
+            }
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -91,7 +107,7 @@ class PlaylistDownloadEnqueueService : LifecycleService() {
             return
         }
         amountOfVideos = playlist.videos
-        enqueueStreams(playlist.relatedStreams)
+        enqueueStreams(playlistId, playlist.relatedStreams)
     }
 
     private suspend fun enqueuePublicPlaylist() {
@@ -103,8 +119,26 @@ class PlaylistDownloadEnqueueService : LifecycleService() {
             return
         }
 
+        val thumbnailPath = getDownloadPath(DownloadHelper.PLAYLIST_THUMBNAIL_DIR, playlistId)
+        CoroutineScope(Dispatchers.IO).launch {
+            playlist.thumbnailUrl?.let { url ->
+                ImageHelper.downloadImage(
+                    this@PlaylistDownloadEnqueueService, url, thumbnailPath
+                )
+            }
+        }
+
+        DatabaseHolder.Database.downloadDao().insertPlaylist(
+            DownloadPlaylist(
+                playlistId = playlistId,
+                title = playlist.name.orEmpty(),
+                description = playlist.description,
+                thumbnailPath = thumbnailPath,
+            )
+        )
+
         amountOfVideos = playlist.videos
-        enqueueStreams(playlist.relatedStreams)
+        enqueueStreams(playlistId, playlist.relatedStreams)
 
         var nextPage = playlist.nextpage
         // retry each api call once when fetching next pages to increase success chances
@@ -128,16 +162,24 @@ class PlaylistDownloadEnqueueService : LifecycleService() {
             }
 
             alreadyRetriedOnce = false
-            enqueueStreams(playlistPage.relatedStreams)
+            enqueueStreams(playlistId, playlistPage.relatedStreams)
             nextPage = playlistPage.nextpage
         }
     }
 
-    private suspend fun enqueueStreams(streams: List<StreamItem>) {
+    private suspend fun enqueueStreams(playlistId: String, streams: List<StreamItem>) {
         nManager.notify(NotificationId.ENQUEUE_PLAYLIST_DOWNLOAD.id, buildNotification())
 
         for (stream in streams) {
             val videoId = stream.url!!.toID()
+
+            // link the playlist to the video, so that we can later query all videos contained in the playlist
+            DatabaseHolder.Database.downloadDao().insertPlaylistVideoConnection(
+                DownloadPlaylistVideosCrossRef(
+                    videoId = videoId,
+                    playlistId = playlistId
+                )
+            )
 
             // only download videos that have not been downloaded before
             if (!DatabaseHolder.Database.downloadDao().exists(videoId)) {
@@ -184,6 +226,11 @@ class PlaylistDownloadEnqueueService : LifecycleService() {
         return sortedStreams
             .lastOrNull { it.quality.getWhileDigit()!! <= maxStreamQuality }
             ?: sortedStreams.firstOrNull()
+    }
+
+    @Suppress("SameParameterValue")
+    private fun getDownloadPath(directory: String, fileName: String): Path {
+        return DownloadHelper.getDownloadDir(this, directory) / fileName
     }
 
     override fun onDestroy() {

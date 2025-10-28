@@ -12,11 +12,42 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <LinearLayout
+            android:id="@+id/search_suggestion_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:background="?selectableItemBackground">
+
+            <TextView
+                android:id="@+id/search_suggestion_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="@string/did_you_mean"
+                android:textSize="16sp"
+                android:layout_marginEnd="8dp"/>
+
+            <TextView
+                android:id="@+id/search_suggestion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textColor="?colorPrimary"
+                android:textStyle="italic"
+                tools:text="'suggestion'" />
+
+        </LinearLayout>
+
+
+
         <HorizontalScrollView
             android:id="@+id/filter_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="10dp"
             android:scrollbars="none"
             app:layout_constraintBottom_toTopOf="@id/recycler_view"
             app:layout_constraintEnd_toEndOf="parent"
@@ -27,6 +58,7 @@
                 android:id="@+id/filter_chip_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingStart="10dp"
                 app:checkedChip="@id/chip_all"
                 app:selectionRequired="true"
                 app:singleLine="true"
@@ -98,7 +130,7 @@
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
+                android:layout_marginBottom="16dp"
                 android:src="@drawable/ic_search" />
 
             <TextView
