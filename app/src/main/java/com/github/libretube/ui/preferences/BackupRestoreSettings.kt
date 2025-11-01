@@ -1,6 +1,7 @@
 package com.github.libretube.ui.preferences
 
 import android.content.Context
+import android.health.connect.datatypes.units.Length
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,6 +24,7 @@ import com.github.libretube.ui.dialogs.BackupDialog.Companion.BACKUP_DIALOG_REQU
 import com.github.libretube.ui.dialogs.RequireRestartDialog
 import com.github.libretube.util.TextUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -53,6 +55,9 @@ class BackupRestoreSettings : BasePreferenceFragment() {
         if (uri == null) return@registerForActivityResult
         lifecycleScope.launch(Dispatchers.IO) {
             BackupHelper.createAdvancedBackup(requireContext().applicationContext, uri, backupFile)
+            withContext(Dispatchers.Main){
+                Snackbar.make(requireView(), R.string.success, Snackbar.LENGTH_SHORT).show()
+            }
         }
     }
 
