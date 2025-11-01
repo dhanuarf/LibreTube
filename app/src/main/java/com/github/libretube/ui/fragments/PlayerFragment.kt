@@ -744,23 +744,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
             newShareDialog.show(childFragmentManager, ShareDialog::class.java.name)
         }
 
-        binding.relPlayerExternalPlayer.setOnClickListener {
-            if (!this::streams.isInitialized || streams.hls == null) return@setOnClickListener
-
-            val context = requireContext()
-            lifecycleScope.launch {
-                val hlsStream = withContext(Dispatchers.IO) {
-                    ProxyHelper.rewriteUrlUsingProxyPreference(streams.hls!!).toUri()
-                }
-                IntentHelper.openWithExternalPlayer(
-                    context,
-                    hlsStream,
-                    streams.title,
-                    streams.uploader
-                )
-            }
-        }
-
         binding.relPlayerBackground.setOnClickListener {
             // start the background mode
             switchToAudioMode()
@@ -1239,7 +1222,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
 
         // seekbar preview setup
         playerControlsBinding.seekbarPreview.isGone = true
-        seekBarPreviewListener?.let { playerControlsBinding.exoProgress.removeListener(it) }
+        seekBarPreviewListener?.let { playerControlsBinding.exoProgress.removeSeekBarListener(it) }
         seekBarPreviewListener = createSeekbarPreviewListener().also {
             playerControlsBinding.exoProgress.addSeekBarListener(it)
         }
