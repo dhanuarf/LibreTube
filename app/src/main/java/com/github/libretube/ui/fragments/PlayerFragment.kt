@@ -34,6 +34,7 @@ import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.core.os.postDelayed
 import androidx.core.view.WindowCompat
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -421,6 +422,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        postponeEnterTransition()
         // broadcast receiver for PiP actions
         ContextCompat.registerReceiver(
             requireContext(),
@@ -555,6 +557,9 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
         }
 
         toggleVideoInfoVisibility(false)
+        view.doOnPreDraw {
+            startPostponedEnterTransition()
+        }
     }
 
     private fun attachToPlayerService(playerData: PlayerData, startNewSession: Boolean) {
@@ -604,6 +609,8 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
         mainActivity.binding.container.isVisible = true
         val mainMotionLayout = mainActivity.binding.mainMotionLayout
         mainMotionLayout.progress = 0F
+
+        binding.playerMotionLayout.progress = 0F
 
         var transitionStartId = 0
         var transitionEndId = 0
@@ -663,9 +670,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
                     closeMiniPlayer()
                 }
             }
-
-        binding.playerMotionLayout.progress = 1F
-        binding.playerMotionLayout.transitionToStart()
 
         val activity = requireActivity()
         if (PlayerHelper.pipEnabled) {

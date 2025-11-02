@@ -175,6 +175,7 @@ object NavigationHelper {
             IntentData.alreadyStarted to alreadyStarted
         )
         activity.supportFragmentManager.commitNow {
+            setCustomAnimations(R.anim.slide_in_bottom, android.R.anim.fade_out)
             replace<PlayerFragment>(R.id.container, args = bundle)
         }
     }
