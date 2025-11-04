@@ -67,12 +67,24 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            resValue("string", "app_name", "LibreTube")
         }
 
         getByName("debug") {
             isDebuggable = true
-            applicationIdSuffix = ".debug"
+            applicationIdSuffix = ".debug.kuuh"
             resValue("string", "app_name", "LibreTube Debug")
+        }
+
+        create("kuuh"){
+            initWith(getByName("release"))
+            applicationIdSuffix = ".kuuh"
+        }
+    }
+
+    sourceSets{
+        getByName("kuuh"){
+            res.srcDirs("src/kuuh/res")
         }
     }
 
