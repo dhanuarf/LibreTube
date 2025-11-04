@@ -2,13 +2,9 @@ name: CI
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths-ignore:
-      - "README*.md"
-      - "fastlane/**"
-      - "assets/**"
-      - ".github/**/*.md"
   push:
+    branches:
+      - kuuh
     paths-ignore:
       - "README*.md"
       - "fastlane/**"
@@ -39,42 +35,30 @@ jobs:
           distribution: "temurin"
           cache: "gradle"
 
-      - name: Git Configuraion
-        run: |
-          git config --global user.name "libretube-bot"
-          git config --global user.email "libretube@proton.me"
-          git config --global credential.helper store
-          echo "https://libretube-bot:${{ secrets.GH_TOKEN }}@github.com" > ~/.git-credentials
-
       - name: Compile
         run: |
-          ./gradlew assembleDebug
+          ./gradlew assembleKuuh
 
       - name: Sign Apk
-        continue-on-error: true
+        continue-on-error: false
         id: sign_apk
         uses: ilharp/sign-android-release@v2
         with:
-          releaseDir: app/build/outputs/apk/debug
+          releaseDir: app/build/outputs/apk/kuuh
           signingKey: ${{ secrets.ANDROID_SIGNING_KEY }}
           keyAlias: ${{ secrets.ANDROID_KEY_ALIAS }}
           keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      - name: Upload to Archive
-        continue-on-error: true
+      - name: Rename Apk
+        id: rename_apk
         run: |
-          mv .github/uploader.py .
-          echo "GH_REPO = '${{ github.repository }}'" > config_file.py
-          git clone --filter=blob:none https://github.com/libre-tube/NightlyBuilds nightly
-          rm -rf nightly/*.apk
-          mv app/build/outputs/apk/debug/*.apk nightly/
-          cd nightly
-          python ../uploader.py
+          mv app/build/outputs/apk/kuuh/app-arm64-v8a-kuuh-unsigned-signed.apk LibreTubeKuuh-arm64-v8a.apk
       
       - name: Upload APK
         uses: actions/upload-artifact@v6
         with:
-          name: app
-          path: nightly/*.apk
+          name: LibreTubeKuuh-arm64-v8a.apk
+          path: ./*.apk
+
 
