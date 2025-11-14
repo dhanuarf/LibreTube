@@ -57,7 +57,6 @@ class SingleViewTouchableMotionLayout(context: Context, attributeSet: AttributeS
 
     private inner class Listener : GestureDetector.SimpleOnGestureListener() {
         override fun onSingleTapUp(e: MotionEvent): Boolean {
-            setTransitionDuration(200)
             transitionToStart()
             return true
         }

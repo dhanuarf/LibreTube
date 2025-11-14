@@ -496,7 +496,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
             override fun handleOnBackPressed() {
                 if (commonPlayerViewModel.isFullscreen.value == true) unsetFullscreen()
                 else {
-                    binding.playerMotionLayout.setTransitionDuration(250)
                     binding.playerMotionLayout.transitionToEnd()
                     baseActivity.minimizePlayerContainerLayout()
                     baseActivity.requestOrientationChange()
