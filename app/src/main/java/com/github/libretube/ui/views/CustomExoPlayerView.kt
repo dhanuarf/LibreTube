@@ -31,6 +31,7 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.text.Cue
+import androidx.media3.common.text.CueGroup
 import androidx.media3.session.MediaController
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.CaptionStyleCompat
@@ -196,6 +197,39 @@ abstract class CustomExoPlayerView(
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 super.onIsPlayingChanged(isPlaying)
                 keepScreenOn = isPlaying
+            }
+
+            override fun onCues(cueGroup: CueGroup) {
+                val cues = mutableListOf<Cue>()
+                cueGroup.cues.forEach{ cue ->
+                    Cue.Builder().apply {
+                        cue.text?.also{ setText(it) }
+                        cue.bitmap?.also { setBitmap(it) }
+                        cue.textAlignment?.also { setTextAlignment(it) }
+                        cue.multiRowAlignment?.also { setMultiRowAlignment(it) }
+                        setLine(cue.line, cue.lineType)
+                        setLineAnchor(cue.lineAnchor)
+                        setPosition(cue.position)
+                        setPositionAnchor(cue.positionAnchor)
+                        setTextSize(cue.textSize, cue.textSizeType)
+                        setSize(cue.size)
+                        setBitmapHeight(cue.bitmapHeight)
+                        setWindowColor(cue.windowColor)
+                        setVerticalType(cue.verticalType)
+
+                        // If position anchor is 'undefined', we set the position ourselves
+                        if (cue.positionAnchor == Cue.TYPE_UNSET) {
+                            setPosition(0.5f)
+                            setPositionAnchor(Cue.ANCHOR_TYPE_MIDDLE)
+
+                            // set the rest of position-related parameters to 'undefined' to force
+                            // the player to use the default position
+                            setLine(Cue.DIMEN_UNSET, Cue.TYPE_UNSET)
+                            setLineAnchor(Cue.TYPE_UNSET)
+                        }
+                    }.build().also { cues.add(it) }
+                }
+                subtitleView?.setCues(cues)
             }
         })
 
