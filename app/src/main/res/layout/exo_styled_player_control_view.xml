@@ -296,6 +296,24 @@
                 android:layout_height="wrap_content">
 
                 <ImageButton
+                    android:id="@+id/qualityBtn"
+                    style="@style/PlayerControlBottom"
+                    android:src="@drawable/ic_hd"
+                    android:tooltipText="@string/quality"
+                    android:visibility="gone"
+                    app:tint="@android:color/white"
+                    tools:visibility="visible"/>
+
+                <ImageButton
+                    android:id="@+id/captionsBtn"
+                    style="@style/PlayerControlBottom"
+                    android:src="@drawable/ic_caption_off"
+                    android:tooltipText="@string/captions"
+                    android:visibility="gone"
+                    app:tint="@android:color/white"
+                    tools:visibility="visible"/>
+
+                <ImageButton
                     android:id="@+id/fullscreen"
                     style="@style/PlayerControlBottom"
                     android:src="@drawable/ic_fullscreen"
