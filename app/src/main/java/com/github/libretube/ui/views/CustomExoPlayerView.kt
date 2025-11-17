@@ -1034,7 +1034,7 @@ abstract class CustomExoPlayerView(
 
         private const val SUBTITLE_BOTTOM_PADDING_FRACTION = 0.158f
         private const val ANIMATION_DURATION = 100L
-        private const val AUTO_HIDE_CONTROLLER_DELAY = 2000L
+        private const val AUTO_HIDE_CONTROLLER_DELAY = 2500L
         private val LANDSCAPE_MARGIN_HORIZONTAL = 20f.dpToPx()
         private val LANDSCAPE_MARGIN_HORIZONTAL_NONE = 0f.dpToPx()
     }
