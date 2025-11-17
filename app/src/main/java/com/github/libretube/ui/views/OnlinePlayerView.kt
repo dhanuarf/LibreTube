@@ -198,6 +198,23 @@ class OnlinePlayerView(
             submitDialog.arguments = buildSbBundleArgs() ?: return@setOnClickListener
             submitDialog.show((context as BaseActivity).supportFragmentManager, null)
         }
+
+        binding.captionsBtn.isVisible = true
+        binding.qualityBtn.isVisible = true
+    }
+
+    fun isCaptionCurrentlyEnabled(): Boolean = player?.let {
+        PlayerHelper.getCurrentPlayedCaptionFormat(it)?.language != null
+    } == true
+
+    fun updateCaptionBtnDrawable(isCaptionEnabled: Boolean? = null) {
+        var isEnabled = isCaptionEnabled ?: isCaptionCurrentlyEnabled()
+
+        val drawable =
+            if (isEnabled == true) R.drawable.ic_caption
+            else R.drawable.ic_caption_off
+
+        binding.captionsBtn.setImageResource(drawable)
     }
 
     private fun buildSbBundleArgs(): Bundle? {
@@ -259,6 +276,7 @@ class OnlinePlayerView(
     override fun showController() {
         super.showController()
 
+        updateCaptionBtnDrawable()
         if (commonPlayerViewModel?.isFullscreen?.value == true && !isPlayerLocked) {
             toggleSystemBars(true)
         }

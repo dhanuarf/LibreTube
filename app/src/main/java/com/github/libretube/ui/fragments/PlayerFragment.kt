@@ -813,6 +813,21 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
         }
 
         binding.descriptionLayout.handleLink = this::handleLink
+
+        playerControlsBinding.captionsBtn.setOnClickListener {
+            // if currently enabled, quick disable on click without opening menu
+            if (binding.player.isCaptionCurrentlyEnabled()) {
+                updateSubtitle(Subtitle(name = getString(R.string.none)))
+                return@setOnClickListener
+            }
+
+            onCaptionsClicked()
+        }
+
+        playerControlsBinding.qualityBtn.setOnClickListener {
+            onQualityClicked()
+        }
+
     }
 
     private fun updateMaxSheetHeight() {
@@ -1354,6 +1369,12 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
         }
     }
 
+    private fun updateSubtitle(subtitle: Subtitle){
+        updateCurrentSubtitle(subtitle)
+        viewModel.currentSubtitle = subtitle
+        binding.player.updateCaptionBtnDrawable(subtitle.name != getString(R.string.none))
+    }
+
     override fun onCaptionsClicked() {
         if (!this@PlayerFragment::streams.isInitialized || streams.subtitles.isEmpty()) {
             Toast.makeText(context, R.string.no_subtitles_available, Toast.LENGTH_SHORT).show()
@@ -1374,8 +1395,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), OnlinePlayerOptions {
                     ?.getDisplayName(requireContext()) ?: getString(R.string.none)
             ) { index ->
                 val subtitle = subtitles.getOrNull(index) ?: return@setSimpleItems
-                updateCurrentSubtitle(subtitle)
-                viewModel.currentSubtitle = subtitle
+                updateSubtitle(subtitle)
             }
             .show(childFragmentManager)
     }
