@@ -49,7 +49,7 @@ data class Streams(
     val chapters: List<ChapterSegment> = emptyList(),
     val uploaderSubscriberCount: Long = 0,
     val previewFrames: List<PreviewFrames> = emptyList(),
-    var isShort: Boolean = false
+    var deArrowData: DeArrowData? = null,
 ): Parcelable {
     @IgnoredOnParcel
     val isLive = livestream || duration <= 0
