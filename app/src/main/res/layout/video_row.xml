@@ -104,12 +104,33 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="4dp"
         android:ellipsize="end"
         android:maxLines="2"
         android:textAlignment="viewStart"
-        app:layout_constraintEnd_toStartOf="@id/download_badge"
+        app:layout_constraintEnd_toStartOf="@+id/dearrow_indicator_container"
         app:layout_constraintStart_toEndOf="@id/thumbnail_card"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <RelativeLayout
+        android:id="@+id/dearrow_indicator_container"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@+id/download_badge"
+        app:layout_constraintTop_toTopOf="@+id/thumbnail_card"
+        tools:visibility="visible" >
+
+        <CheckBox
+            android:id="@+id/dearrow_indicator_checkbox"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerHorizontal="true"
+            android:button="@drawable/ic_dearrow_checkable"
+            android:tooltipText="@string/tooltip_dearrow"
+            app:buttonTint="@null" />
+
+    </RelativeLayout>
 
     <LinearLayout
         android:id="@+id/video_info_container"

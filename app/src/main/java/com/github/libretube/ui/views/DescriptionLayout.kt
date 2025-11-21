@@ -17,6 +17,7 @@ import com.github.libretube.databinding.DescriptionLayoutBinding
 import com.github.libretube.enums.SbSkipOptions
 import com.github.libretube.extensions.formatShort
 import com.github.libretube.helpers.ClipboardHelper
+import com.github.libretube.helpers.ImageHelper
 import com.github.libretube.helpers.PlayerHelper
 import com.github.libretube.ui.activities.VideoTagsAdapter
 import com.github.libretube.util.HtmlParser
@@ -77,6 +78,25 @@ class DescriptionLayout(
             textDislike.text = streams.dislikes.formatShort()
 
             playerTitle.text = streams.title
+            binding.dearrowIndicatorContainer.isVisible = false
+            streams.deArrowData?.let { deArrow ->
+                binding.dearrowIndicatorCheckbox.setOnCheckedChangeListener { _, checked ->
+                    if (checked){
+                        if (deArrow.title != null) playerTitle.text = deArrow.title
+                    }
+                    else {
+                        playerTitle.text = streams.title
+                    }
+                }
+                binding.dearrowIndicatorCheckbox.isChecked = true
+
+                binding.dearrowIndicatorContainer.setOnClickListener {
+                    binding.dearrowIndicatorCheckbox.isChecked = !binding.dearrowIndicatorCheckbox.isChecked
+                }
+                binding.dearrowIndicatorContainer.isVisible = true
+
+            }
+
             playerDescription.text = streams.description
 
             metaInfo.isVisible = streams.metaInfo.isNotEmpty()

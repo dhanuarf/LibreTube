@@ -3,6 +3,7 @@ package com.github.libretube.util
 import android.util.Log
 import com.github.libretube.api.MediaServiceRepository
 import com.github.libretube.api.obj.DeArrowContent
+import com.github.libretube.api.obj.DeArrowData
 import com.github.libretube.api.obj.Streams
 import com.github.libretube.constants.PreferenceKeys
 import com.github.libretube.helpers.PreferenceHelper
@@ -37,8 +38,13 @@ object DeArrowUtil {
 
         response[vidId]?.let { data ->
             val (newTitle, newThumbnail) = extractTitleAndThumbnail(data)
-            if (newTitle != null) streams.title = newTitle
-            if (newThumbnail != null) streams.thumbnailUrl = newThumbnail
+            if (newTitle == null && newThumbnail == null) return streams
+
+            val deArrowData = DeArrowData(
+                title = newTitle,
+                thumbnailUrl = newThumbnail
+            )
+            streams.deArrowData = deArrowData
         }
 
         return streams

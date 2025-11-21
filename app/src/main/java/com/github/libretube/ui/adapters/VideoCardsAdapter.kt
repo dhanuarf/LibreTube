@@ -124,11 +124,33 @@ class VideoCardsAdapter(private val columnWidthDp: Float? = null) :
                 true
             }
 
+            dearrowIndicatorContainer.isVisible = false
             CoroutineScope(Dispatchers.IO).launch {
                 DeArrowUtil.deArrowVideoId(videoId)?.let { (title, thumbnail) ->
                     withContext(Dispatchers.Main) {
-                        if (title != null) this@apply.textViewTitle.text = title
-                        if (thumbnail != null) ImageHelper.loadImage(thumbnail, this@apply.thumbnail)
+                        if (title !=null || thumbnail != null) {
+                            fun applyDeArrow(apply: Boolean){
+                                textViewTitle.text =
+                                    title.takeIf { it != null && apply } ?: video.title
+
+                                ImageHelper.loadImage(
+                                    thumbnail.takeIf { it != null && apply } ?: video.thumbnail,
+                                    holder.trendingRowBinding!!.thumbnail
+                                )
+                            }
+                            applyDeArrow(true)
+
+                            dearrowIndicatorCheckbox.isChecked = true
+                            dearrowIndicatorCheckbox.setOnCheckedChangeListener { _, checked ->
+                                applyDeArrow(checked)
+                            }
+
+                            dearrowIndicatorContainer.isVisible = true
+                            // Allow click on the container for accessibility
+                            dearrowIndicatorContainer.setOnClickListener {
+                                dearrowIndicatorCheckbox.isChecked = !dearrowIndicatorCheckbox.isChecked
+                            }
+                        }
                     }
                 }
             }

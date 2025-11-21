@@ -137,11 +137,33 @@ class SearchResultsAdapter(
                 }
             }
 
+            dearrowIndicatorContainer.isVisible = false
             CoroutineScope(Dispatchers.IO).launch {
                 DeArrowUtil.deArrowVideoId(videoId)?.let { (title, thumbnail) ->
                     withContext(Dispatchers.Main) {
-                        if (title != null) binding.videoTitle.text = title
-                        if (thumbnail != null) ImageHelper.loadImage(thumbnail, binding.thumbnail)
+                        if (title !=null || thumbnail != null) {
+                            fun applyDeArrow(apply: Boolean){
+                                binding.videoTitle.text =
+                                    title.takeIf { it != null && apply } ?: item.title
+
+                                ImageHelper.loadImage(
+                                    thumbnail.takeIf { it != null && apply } ?: item.thumbnail,
+                                    binding.thumbnail
+                                )
+                            }
+                            applyDeArrow(true)
+
+                            dearrowIndicatorCheckbox.isChecked = true
+                            dearrowIndicatorCheckbox.setOnCheckedChangeListener { _, checked ->
+                                applyDeArrow(checked)
+                            }
+
+                            dearrowIndicatorContainer.isVisible = true
+                            // Allow click on the container for accessibility
+                            dearrowIndicatorContainer.setOnClickListener {
+                                dearrowIndicatorCheckbox.isChecked = !dearrowIndicatorCheckbox.isChecked
+                            }
+                        }
                     }
                 }
             }
