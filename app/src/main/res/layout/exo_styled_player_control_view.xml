@@ -8,14 +8,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
+        android:background="@drawable/bg_player_control_top"
         android:animateLayoutChanges="true"
         android:orientation="vertical"
         android:paddingHorizontal="5dp"
+        android:paddingBottom="10dp"
         android:paddingTop="5dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingTop="4dp"
             android:layoutDirection="ltr">
 
             <LinearLayout
@@ -27,7 +30,6 @@
                 <ImageView
                     android:id="@+id/close_imageButton"
                     style="@style/PlayerControlTop"
-                    android:layout_marginEnd="-10dp"
                     android:src="@drawable/ic_close"
                     android:tooltipText="@string/tooltip_minimize"
                     app:tint="@android:color/white" />
@@ -51,25 +53,26 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="@android:color/white"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:visibility="invisible" />
 
             <LinearLayout
                 android:id="@+id/exo_top_bar_right"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:gravity="center_vertical"
                 android:layoutDirection="ltr">
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/autoPlay"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="36dp"
                     android:layout_marginEnd="2dp"
-                    android:scaleX="0.8"
-                    android:scaleY="0.8"
+                    android:scaleX="0.7"
+                    android:scaleY="0.7"
                     android:thumb="@drawable/player_switch_thumb"
                     android:tooltipText="@string/player_autoplay"
+                    android:padding="6dp"
                     app:thumbTint="@android:color/white"
                     app:track="@drawable/player_switch_track"
                     app:trackTint="#88ffffff" />
@@ -127,56 +130,58 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:background="@android:color/transparent"
         android:gravity="center"
-        android:padding="20dp"
         android:layoutDirection="ltr">
 
         <include
             android:id="@+id/seek_button_rewind"
             layout="@layout/seek_button_rewind"
-            android:visibility="invisible"
+            android:visibility="gone"
             tools:visibility="visible" />
 
         <ImageView
             android:id="@+id/skip_prev"
             style="@style/PlayerControlCenter"
-            android:background="?android:selectableItemBackgroundBorderless"
             android:src="@drawable/ic_prev"
-            android:visibility="invisible"
             app:tint="@android:color/white" />
 
         <ImageButton
             android:id="@+id/playPauseBTN"
             style="@style/ExoStyledControls.Button.Center.PlayPause"
-            android:layout_marginHorizontal="10dp"
-            android:background="?android:selectableItemBackgroundBorderless"
+            android:background="@drawable/bg_player_control_btn"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginHorizontal="18dp"
             android:src="@drawable/ic_play"
-            app:tint="@android:color/white" />
+            android:scaleType="fitCenter"
+            android:padding="6dp"
+            app:tint="@android:color/white"
+            android:translationZ="5dp"
+            />
 
         <ImageView
             android:id="@+id/skip_next"
             style="@style/PlayerControlCenter"
-            android:background="?android:selectableItemBackgroundBorderless"
             android:src="@drawable/ic_next"
-            android:visibility="invisible"
             app:tint="@android:color/white" />
 
         <include
             android:id="@+id/seek_button_forward"
             layout="@layout/seek_button_forward"
-            android:visibility="invisible"
+            android:visibility="gone"
             tools:visibility="visible" />
 
     </LinearLayout>
 
     <LinearLayout
+        android:paddingTop="10dp"
         android:id="@+id/bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_marginTop="10dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@drawable/bg_player_control_bottom">
 
         <LinearLayout
             android:id="@+id/seekbar_preview"
@@ -227,16 +232,14 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="-6dp"
+            android:gravity="center_vertical"
             android:baselineAligned="false"
-            android:paddingStart="10dp"
-            android:paddingEnd="20dp">
+            android:paddingHorizontal="5dp">
 
             <LinearLayout
                 android:id="@id/exo_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
                 android:layout_marginStart="10dp">
 
                 <TextView
@@ -262,13 +265,11 @@
                     android:text="00:00"
                     android:visibility="gone"
                     tools:ignore="HardcodedText" />
-
             </LinearLayout>
 
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
                 android:layout_marginStart="12dp"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1">
@@ -282,6 +283,7 @@
                     android:maxLines="1"
                     android:textColor="@android:color/white"
                     android:visibility="gone"
+                    android:layout_marginStart="8dp"
                     app:drawableEndCompat="@drawable/ic_arrow_right"
                     app:drawableTint="@android:color/white"
                     tools:drawableTint="?colorControlNormal"
@@ -330,20 +332,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:layout_marginHorizontal="10dp"
-            android:translationZ="10dp">
+            android:layout_marginHorizontal="10dp">
 
             <com.github.libretube.ui.views.ChapterTimeBar
                 android:id="@+id/exo_progress"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingTop="6dp"
-                app:bar_height="2dp"
-                app:played_color="?attr/colorSecondary"
-                app:scrubber_color="?attr/colorSecondary"
+                app:bar_height="4dp"
+                app:played_color="?attr/colorPrimary"
+                app:scrubber_color="?attr/colorPrimary"
                 app:scrubber_dragged_size="16dp"
-                app:scrubber_enabled_size="12dp"
-                app:touch_target_height="35dp" />
+                app:scrubber_enabled_size="0dp"
+                app:touch_target_height="34dp" />
 
         </LinearLayout>
 

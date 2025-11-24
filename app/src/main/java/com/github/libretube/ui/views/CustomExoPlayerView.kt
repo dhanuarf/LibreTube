@@ -1,5 +1,6 @@
 package com.github.libretube.ui.views
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.ActivityInfo
@@ -18,6 +19,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.TooltipCompat
+import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.os.postDelayed
@@ -27,6 +29,8 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.marginStart
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
+import androidx.fragment.app.findFragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.media3.common.C
@@ -194,6 +198,7 @@ class CustomExoPlayerView(
                 if (isFullscreen()) playerCallback.toggleFullscreen()
             }
         )
+        setControllerAnimationEnabled(false)
     }
 
     fun initialize(
@@ -551,11 +556,20 @@ class CustomExoPlayerView(
     override fun hideController() {
         // remove the callback to hide the controller
         cancelHideControllerTask()
-        super.hideController()
-        backgroundBinding.exoControlsBackground.animate()
-            .alpha(0f)
-            .setDuration(500)
-            .start()
+
+        val animator = ValueAnimator.ofFloat(1f, 0f).apply {
+            duration = CONTROLLER_ANIMATION_DURATION
+            addUpdateListener { valueAnimator ->
+                val animatedValue = valueAnimator.animatedValue as Float
+                binding.topBar.alpha = animatedValue
+                binding.exoCenterControls.alpha = animatedValue
+                binding.bottomBar.alpha = animatedValue
+            }
+            doOnEnd {
+                super.hideController()
+            }
+        }
+        animator.start()
 
         if (isFullscreen()) {
             toggleSystemBars(false)
@@ -568,10 +582,18 @@ class CustomExoPlayerView(
         // automatically hide the controller after 2 seconds
         enqueueHideControllerTask()
         super.showController()
-        backgroundBinding.exoControlsBackground.animate()
-            .alpha(1f)
-            .setDuration(200)
-            .start()
+
+
+        val animator = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = CONTROLLER_ANIMATION_DURATION
+            addUpdateListener { valueAnimator ->
+                val animatedValue = valueAnimator.animatedValue as Float
+                binding.topBar.alpha = animatedValue
+                binding.exoCenterControls.alpha = animatedValue
+                binding.bottomBar.alpha = animatedValue
+            }
+        }
+        animator.start()
 
         if (isFullscreen() && !isPlayerLocked) {
             toggleSystemBars(true)
@@ -1241,8 +1263,13 @@ class CustomExoPlayerView(
      * Add extra margin to the top bar to not overlap the status bar.
      */
     fun updateTopBarMargin() {
-        binding.topBar.updateLayoutParams<MarginLayoutParams> {
-            topMargin = (if (isFullscreen()) 18f else 0f).dpToPx()
+        binding.topBar.also {
+            it.updatePadding(
+                it.paddingLeft,
+                (if (isFullscreen()) 18f else 0f).dpToPx(),
+                it.paddingRight,
+                it.paddingBottom
+            )
         }
     }
 
@@ -1507,6 +1534,7 @@ class CustomExoPlayerView(
 
         private const val SUBTITLE_BOTTOM_PADDING_FRACTION = 0.158f
         private const val ANIMATION_DURATION = 100L
+        private const val CONTROLLER_ANIMATION_DURATION = 200L
         private const val AUTO_HIDE_CONTROLLER_DELAY = 2000L
         private val LANDSCAPE_MARGIN_HORIZONTAL = 20f.dpToPx()
         private val LANDSCAPE_MARGIN_HORIZONTAL_NONE = 0f.dpToPx()
