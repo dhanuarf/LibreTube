@@ -232,9 +232,8 @@ class OnlinePlayerView(
     private fun syncQueueButtons() {
         if (!PlayerHelper.skipButtonsEnabled) return
 
-        // toggle the visibility of next and prev buttons based on queue and whether the player view is locked
-        binding.skipPrev.isInvisible = !PlayingQueue.hasPrev() || isPlayerLocked
-        binding.skipNext.isInvisible = !PlayingQueue.hasNext() || isPlayerLocked
+        binding.skipPrev.alpha = if (PlayingQueue.hasPrev()) 1f else 0.2f
+        binding.skipNext.alpha = if (PlayingQueue.hasNext()) 1f else 0.2f
 
         handler.postDelayed(this::syncQueueButtons, 100)
     }

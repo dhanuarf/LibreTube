@@ -26,6 +26,7 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.marginStart
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.fragment.app.findFragment
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.media3.common.C
@@ -418,9 +419,15 @@ abstract class CustomExoPlayerView(
         // remove the callback to hide the controller
         cancelHideControllerTask()
         super.hideController()
-        backgroundBinding.exoControlsBackground.animate()
+
+        binding.topBar.animate()
             .alpha(0f)
-            .setDuration(500)
+            .setDuration(300)
+            .start()
+
+        binding.bottomBar.animate()
+            .alpha(0f)
+            .setDuration(300)
             .start()
     }
 
@@ -430,9 +437,15 @@ abstract class CustomExoPlayerView(
         // automatically hide the controller after 2 seconds
         enqueueHideControllerTask()
         super.showController()
-        backgroundBinding.exoControlsBackground.animate()
+
+        binding.topBar.animate()
             .alpha(1f)
-            .setDuration(200)
+            .setDuration(100)
+            .start()
+
+        binding.bottomBar.animate()
+            .alpha(1f)
+            .setDuration(100)
             .start()
     }
 
@@ -820,8 +833,13 @@ abstract class CustomExoPlayerView(
      * Add extra margin to the top bar to not overlap the status bar.
      */
     fun updateTopBarMargin() {
-        binding.topBar.updateLayoutParams<MarginLayoutParams> {
-            topMargin = (if (isFullscreen()) 18f else 0f).dpToPx()
+        binding.topBar.also {
+            it.updatePadding(
+                it.paddingLeft,
+                (if (isFullscreen()) 18f else 0f).dpToPx(),
+                it.paddingRight,
+                it.paddingBottom
+            )
         }
     }
 

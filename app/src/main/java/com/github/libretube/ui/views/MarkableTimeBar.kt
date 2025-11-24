@@ -25,7 +25,7 @@ open class MarkableTimeBar(
     private var segments = listOf<Segment>()
     private var length: Int = 0
 
-    private val progressBarHeight = 2f.dpToPx()
+    private val progressBarHeight = 4f.dpToPx()
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)

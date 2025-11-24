@@ -4,12 +4,13 @@
     android:id="@+id/rewindBTN"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:padding="10dp"
     android:layout_gravity="center">
 
     <ImageView
         android:id="@+id/rewindIV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:src="@drawable/ic_rewind"
         app:tint="@android:color/white" />
 
