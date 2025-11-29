@@ -7,7 +7,7 @@ import android.content.Intent
 import android.os.Process
 import androidx.core.content.getSystemService
 import androidx.core.os.bundleOf
-import androidx.fragment.app.commitNow
+import androidx.fragment.app.commit
 import androidx.fragment.app.replace
 import com.github.libretube.NavDirections
 import com.github.libretube.R
@@ -145,7 +145,7 @@ object NavigationHelper {
         minimizeByDefault: Boolean = false
     ) {
         val activity = ContextHelper.unwrapActivity<BaseActivity>(context)
-        activity.supportFragmentManager.commitNow {
+        activity.supportFragmentManager.commit {
             val args = bundleOf(
                 IntentData.minimizeByDefault to minimizeByDefault,
                 IntentData.offlinePlayer to offlinePlayer
@@ -174,7 +174,7 @@ object NavigationHelper {
             IntentData.playerData to playerData,
             IntentData.alreadyStarted to alreadyStarted
         )
-        activity.supportFragmentManager.commitNow {
+        activity.supportFragmentManager.commit {
             setCustomAnimations(R.anim.slide_in_bottom, android.R.anim.fade_out)
             replace<PlayerFragment>(R.id.container, args = bundle)
         }
