@@ -229,6 +229,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="-10dp"
             android:baselineAligned="false"
             android:paddingStart="10dp"
             android:paddingEnd="20dp">
@@ -329,15 +330,14 @@
         <LinearLayout
             android:id="@+id/progress_bar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
+            android:layout_height="35dp"
+            android:gravity="bottom"
             android:layout_marginHorizontal="10dp">
 
             <com.github.libretube.ui.views.ChapterTimeBar
                 android:id="@+id/exo_progress"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingTop="6dp"
+                android:layout_height="wrap_content"
                 app:bar_height="4dp"
                 app:played_color="?attr/colorSecondary"
                 app:scrubber_color="?attr/colorSecondary"
