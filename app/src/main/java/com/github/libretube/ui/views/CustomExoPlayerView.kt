@@ -545,21 +545,21 @@ class CustomExoPlayerView(
     override fun hideController() {
         // remove the callback to hide the controller
         cancelHideControllerTask()
-        super.hideController()
 
+        binding.exoCenterControls.animate()
+            .alpha(0f)
+            .setDuration(CONTROL_ANIMATION_HIDE_DURATION)
+            .start()
         binding.topBar.animate()
             .alpha(0f)
-            .setDuration(300)
+            .setDuration(CONTROL_ANIMATION_HIDE_DURATION)
             .start()
-
         binding.bottomBar.animate()
             .alpha(0f)
-            .setDuration(300)
-            .start()
-
-        if (isFullscreen()) {
-            toggleSystemBars(false)
-        }
+            .setDuration(CONTROL_ANIMATION_HIDE_DURATION)
+            .withEndAction {
+                super.hideController()
+            }.start()
     }
 
     override fun showController() {
@@ -569,14 +569,17 @@ class CustomExoPlayerView(
         enqueueHideControllerTask()
         super.showController()
 
+        binding.exoCenterControls.animate()
+            .alpha(1f)
+            .setDuration(CONTROL_ANIMATION_SHOW_DURATION)
+            .start()
         binding.topBar.animate()
             .alpha(1f)
-            .setDuration(100)
+            .setDuration(CONTROL_ANIMATION_SHOW_DURATION)
             .start()
-
         binding.bottomBar.animate()
             .alpha(1f)
-            .setDuration(100)
+            .setDuration(CONTROL_ANIMATION_SHOW_DURATION)
             .start()
 
         if (isFullscreen() && !isPlayerLocked) {
@@ -1171,6 +1174,7 @@ class CustomExoPlayerView(
         super.onConfigurationChanged(newConfig)
 
         updateMarginsByFullscreenMode()
+
     }
 
     /**
@@ -1178,8 +1182,8 @@ class CustomExoPlayerView(
      */
     fun updateMarginsByFullscreenMode() {
         // add a larger bottom margin to the time bar in landscape mode
-        binding.exoProgress.updateLayoutParams<MarginLayoutParams> {
-            bottomMargin = (if (isFullscreen()) 20f else 0f).dpToPx()
+        binding.progressBar.updateLayoutParams<MarginLayoutParams> {
+            bottomMargin = (if (isFullscreen()) 25f else 0f).dpToPx()
         }
 
         updateTopBarMargin()
@@ -1482,5 +1486,8 @@ class CustomExoPlayerView(
         private const val AUTO_HIDE_CONTROLLER_DELAY = 2500L
         private val LANDSCAPE_MARGIN_HORIZONTAL = 20f.dpToPx()
         private val LANDSCAPE_MARGIN_HORIZONTAL_NONE = 0f.dpToPx()
+        private const val CONTROL_ANIMATION_SHOW_DURATION = 150L
+        private const val CONTROL_ANIMATION_HIDE_DURATION = 300L
+
     }
 }
