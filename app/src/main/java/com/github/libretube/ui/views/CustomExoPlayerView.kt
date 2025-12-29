@@ -157,6 +157,7 @@ abstract class CustomExoPlayerView(
             },
             onSwipeDownCompleted = ::minimizeOrExitPlayer
         )
+        setControllerAnimationEnabled(false)
     }
 
     fun initialize(chaptersViewModel: ChaptersViewModel) {
