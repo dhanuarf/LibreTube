@@ -192,6 +192,7 @@ class CustomExoPlayerView(
                 if (isFullscreen()) playerCallback.toggleFullscreen()
             }
         )
+        setControllerAnimationEnabled(false)
     }
 
     fun initialize(
