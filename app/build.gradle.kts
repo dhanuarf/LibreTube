@@ -78,6 +78,7 @@ android {
 
         create("kuuh"){
             initWith(getByName("release"))
+            resValue("string", "app_name", "LibreTubeKuuh")
             applicationIdSuffix = ".kuuh"
         }
     }
