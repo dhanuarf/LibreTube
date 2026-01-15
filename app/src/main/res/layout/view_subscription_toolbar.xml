@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <HorizontalScrollView
+                android:id="@+id/channel_groups_container"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:requiresFadingEdge="horizontal"
+                android:scrollbars="none"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="12dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/edit_groups"
+                        style="@style/ToolbarSubscriptionsButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:insetLeft="0dp"
+                        android:insetRight="0dp"
+                        android:contentDescription="@string/tooltip_edit_groups"
+                        android:tooltipText="@string/tooltip_edit_groups"
+                        app:icon="@drawable/ic_edit" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/channel_groups"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        app:checkedChip="@+id/chip_all"
+                        app:selectionRequired="true"
+                        app:singleLine="true"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_all"
+                            style="@style/ElevatedFilterChip"
+                            android:text="@string/all" />
+
+                    </com.google.android.material.chip.ChipGroup>
+
+                </LinearLayout>
+
+            </HorizontalScrollView>
+
+            <com.google.android.material.button.MaterialButtonGroup
+                android:id="@+id/toolbarButtonGroup"
+                style="@style/Widget.Material3.MaterialSplitButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:spacing="-2dp"
+                tools:layout_width="wrap_content"
+                tools:visibility="visible">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/toggle_subs"
+                    style="@style/ToolbarSubscriptionsButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/subscriptions"
+                    android:text="@string/subscriptions"
+                    android:tooltipText="@string/subscriptions"
+                    app:icon="@drawable/ic_subscriptions"
+                    tools:layout_weight="0"
+                    tools:layout_width="wrap_content"
+                    tools:text="" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/createGroupButton"
+                    style="@style/ToolbarSubscriptionsButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/new_group_dialog_title"
+                    android:tooltipText="@string/new_group_dialog_title"
+                    app:icon="@drawable/ic_group_create" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/filter_sort"
+                    style="@style/ToolbarSubscriptionsButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/tooltip_filter"
+                    android:tooltipText="@string/tooltip_filter"
+                    app:icon="@drawable/ic_filter_sort" />
+
+            </com.google.android.material.button.MaterialButtonGroup>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/feed_progress_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="10dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/feed_progress_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
+                tools:progress="70" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/updating_feed" />
+
+                <TextView
+                    android:id="@+id/feed_progress_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="5/20" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</merge>

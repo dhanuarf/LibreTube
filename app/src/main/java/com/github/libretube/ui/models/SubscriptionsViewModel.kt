@@ -10,6 +10,7 @@ import com.github.libretube.R
 import com.github.libretube.api.SubscriptionHelper
 import com.github.libretube.api.obj.StreamItem
 import com.github.libretube.api.obj.Subscription
+import com.github.libretube.constants.PreferenceKeys
 import com.github.libretube.extensions.TAG
 import com.github.libretube.extensions.toastFromMainDispatcher
 import com.github.libretube.helpers.PreferenceHelper
@@ -18,11 +19,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class SubscriptionsViewModel : ViewModel() {
-    var videoFeed = MutableLiveData<List<StreamItem>?>()
+    private val _selectedChannelGroup = MutableLiveData<Int?>(null)
 
-    var subscriptions = MutableLiveData<List<Subscription>?>()
     val feedProgress = MutableLiveData<FeedProgress?>()
+    val selectedChannelGroup: Int
+        get() = _selectedChannelGroup.value
+            ?: PreferenceHelper.getInt(PreferenceKeys.SELECTED_CHANNEL_GROUP, 0)
 
+
+    var videoFeed = MutableLiveData<List<StreamItem>?>()
+    var subscriptions = MutableLiveData<List<Subscription>?>()
     var subFeedRecyclerViewState: Parcelable? = null
 
     fun fetchFeed(context: Context, forceRefresh: Boolean) {
@@ -54,5 +60,10 @@ class SubscriptionsViewModel : ViewModel() {
             }
             this@SubscriptionsViewModel.subscriptions.postValue(subscriptions)
         }
+    }
+
+    fun updateSelectedChannelGroup(groupIndex: Int){
+        _selectedChannelGroup.value = groupIndex
+        PreferenceHelper.putInt(PreferenceKeys.SELECTED_CHANNEL_GROUP, groupIndex)
     }
 }

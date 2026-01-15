@@ -4,10 +4,12 @@ import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
+import android.widget.LinearLayout
 import androidx.core.os.bundleOf
 import androidx.core.view.children
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -17,8 +19,10 @@ import com.github.libretube.api.obj.StreamItem
 import com.github.libretube.constants.IntentData
 import com.github.libretube.constants.PreferenceKeys
 import com.github.libretube.databinding.FragmentSubscriptionsBinding
+import com.github.libretube.databinding.ViewSubscriptionToolbarBinding
 import com.github.libretube.db.DatabaseHelper
 import com.github.libretube.db.DatabaseHolder
+import com.github.libretube.db.obj.SubscriptionGroup
 import com.github.libretube.extensions.toID
 import com.github.libretube.helpers.NavigationHelper
 import com.github.libretube.helpers.PreferenceHelper
@@ -28,6 +32,7 @@ import com.github.libretube.ui.base.DynamicLayoutManagerFragment
 import com.github.libretube.ui.models.EditChannelGroupsModel
 import com.github.libretube.ui.models.SubscriptionsViewModel
 import com.github.libretube.ui.sheets.ChannelGroupsSheet
+import com.github.libretube.ui.sheets.EditChannelGroupSheet
 import com.github.libretube.ui.sheets.FilterSortBottomSheet
 import com.github.libretube.ui.sheets.FilterSortBottomSheet.Companion.FILTER_SORT_REQUEST_KEY
 import com.github.libretube.ui.sheets.SubscriptionsBottomSheet
@@ -38,13 +43,18 @@ import kotlinx.coroutines.launch
 
 class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_subscriptions) {
     private var _binding: FragmentSubscriptionsBinding? = null
+    private var _toolbarBinding: ViewSubscriptionToolbarBinding? = null
     private val binding get() = _binding!!
+    private val toolbarBinding get() = _toolbarBinding!!
+
+    var selectedFilterGroup: Int
+        set(value) {
+            viewModel.updateSelectedChannelGroup(value)
+        }
+        get() = viewModel.selectedChannelGroup
 
     private val viewModel: SubscriptionsViewModel by activityViewModels()
     private val channelGroupsModel: EditChannelGroupsModel by activityViewModels()
-    private var selectedFilterGroup
-        set(value) = PreferenceHelper.putInt(PreferenceKeys.SELECTED_CHANNEL_GROUP, value)
-        get() = PreferenceHelper.getInt(PreferenceKeys.SELECTED_CHANNEL_GROUP, 0)
 
     private var isAppBarFullyExpanded = true
 
@@ -76,6 +86,7 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentSubscriptionsBinding.bind(view)
+        _toolbarBinding = ViewSubscriptionToolbarBinding.bind(view)
         super.onViewCreated(view, savedInstanceState)
 
         setupSortAndFilter()
@@ -121,12 +132,12 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
 
         viewModel.feedProgress.observe(viewLifecycleOwner) { progress ->
             if (progress == null || progress.currentProgress == progress.total) {
-                binding.feedProgressContainer.isGone = true
+                toolbarBinding.feedProgressContainer.isGone = true
             } else {
-                binding.feedProgressContainer.isVisible = true
-                binding.feedProgressText.text = "${progress.currentProgress}/${progress.total}"
-                binding.feedProgressBar.max = progress.total
-                binding.feedProgressBar.progress = progress.currentProgress
+                toolbarBinding.feedProgressContainer.isVisible = true
+                toolbarBinding.feedProgressText.text = "${progress.currentProgress}/${progress.total}"
+                toolbarBinding.feedProgressBar.max = progress.total
+                toolbarBinding.feedProgressBar.progress = progress.currentProgress
             }
         }
 
@@ -135,15 +146,14 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
             viewModel.fetchFeed(requireContext(), forceRefresh = true)
         }
 
-        binding.toggleSubs.isVisible = true
-
-        binding.toggleSubs.setOnClickListener {
+        toolbarBinding.toggleSubs.setOnClickListener {
             SubscriptionsBottomSheet()
                 .show(childFragmentManager)
         }
 
-        binding.channelGroups.setOnCheckedStateChangeListener { group, _ ->
-            selectedFilterGroup = group.children.indexOfFirst { it.id == group.checkedChipId }
+        toolbarBinding.channelGroups.setOnCheckedStateChangeListener { group, _ ->
+            selectedFilterGroup =
+                group.children.indexOfFirst { it.id == group.checkedChipId }
 
             lifecycleScope.launch {
                 showFeed(restoreScrollState = false)
@@ -154,8 +164,13 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
             lifecycleScope.launch { initChannelGroups() }
         }
 
-        binding.editGroups.setOnClickListener {
+        toolbarBinding.editGroups.setOnClickListener {
             ChannelGroupsSheet().show(childFragmentManager, null)
+        }
+
+        toolbarBinding.createGroupButton.setOnClickListener {
+            channelGroupsModel.groupToEdit = SubscriptionGroup("", mutableListOf(), 0)
+            EditChannelGroupSheet().show(parentFragmentManager, null)
         }
 
         binding.subFeed.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -176,7 +191,7 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
     }
 
     private fun setupSortAndFilter() {
-        binding.filterSort.setOnClickListener {
+        toolbarBinding.filterSort.setOnClickListener {
             childFragmentManager.setFragmentResultListener(
                 FILTER_SORT_REQUEST_KEY,
                 viewLifecycleOwner
@@ -232,16 +247,32 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
 
     @SuppressLint("InflateParams")
     private fun initChannelGroups() {
-        val binding = _binding ?: return
+        val toolbarBinding = _toolbarBinding ?: return
 
-        binding.chipAll.isChecked = selectedFilterGroup == 0
-        binding.chipAll.setOnLongClickListener {
+        toolbarBinding.chipAll.isChecked = viewModel.selectedChannelGroup == 0
+        toolbarBinding.chipAll.setOnLongClickListener {
             lifecycleScope.launch { playByGroup(0) }
             true
         }
 
-        binding.channelGroups.removeAllViews()
-        binding.channelGroups.addView(binding.chipAll)
+        toolbarBinding.channelGroups.removeAllViews()
+        toolbarBinding.channelGroups.addView(toolbarBinding.chipAll)
+
+        val anyChannelGroups = !channelGroupsModel.groups.value.isNullOrEmpty()
+        with(toolbarBinding) {
+            channelGroupsContainer.isVisible = anyChannelGroups
+            createGroupButton.isGone = anyChannelGroups
+            toggleSubs.text = if (anyChannelGroups) null else getString(R.string.subscriptions)
+            toggleSubs.updateLayoutParams<LinearLayout.LayoutParams> {
+                width = if (anyChannelGroups) LinearLayout.LayoutParams.WRAP_CONTENT else 0
+                weight = if (anyChannelGroups) 0f else 1f
+            }
+            toolbarButtonGroup.updateLayoutParams {
+                width =
+                    if (anyChannelGroups) LinearLayout.LayoutParams.WRAP_CONTENT
+                    else LinearLayout.LayoutParams.MATCH_PARENT
+            }
+        }
 
         channelGroupsModel.groups.value?.forEachIndexed { index, group ->
             val chip = layoutInflater.inflate(R.layout.filter_chip, null) as Chip
@@ -255,10 +286,11 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
                     true
                 }
             }
+            toolbarBinding.channelGroups.addView(chip)
 
-            binding.channelGroups.addView(chip)
-
-            if (index + 1 == selectedFilterGroup) binding.channelGroups.check(chip.id)
+            if (index + 1 == viewModel.selectedChannelGroup){
+                toolbarBinding.channelGroups.check(chip.id)
+            }
         }
     }
 
@@ -287,7 +319,7 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
         val videoFeed = viewModel.videoFeed.value ?: return
 
         val feed = videoFeed
-            .filterByGroup(selectedFilterGroup)
+            .filterByGroup(viewModel.selectedChannelGroup)
             .let {
                 DatabaseHelper.filterByStreamTypeAndWatchPosition(it, hideWatched, showUpcoming)
             }
@@ -314,9 +346,6 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
         val notLoaded = viewModel.videoFeed.value.isNullOrEmpty()
         binding.subFeed.isGone = notLoaded
         binding.emptyFeed.isVisible = notLoaded
-
-        binding.toggleSubs.text = getString(R.string.subscriptions)
-
         binding.subRefresh.isRefreshing = false
 
         feedAdapter.submitList(sortedFeed) {

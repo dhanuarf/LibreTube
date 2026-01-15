@@ -400,6 +400,7 @@
     <string name="auto_fullscreen_shorts">Auto fullscreen on short videos</string>
     <string name="channel_groups">Channel groups</string>
     <string name="new_group">New</string>
+    <string name="new_group_dialog_title">Create new channel group</string>
     <string name="group_name">Group name</string>
     <string name="group_name_error_empty">Please enter a name</string>
     <string name="group_name_error_exists">Please choose a name that is unique</string>
