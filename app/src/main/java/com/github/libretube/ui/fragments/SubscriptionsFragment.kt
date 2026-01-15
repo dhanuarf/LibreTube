@@ -11,7 +11,9 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.libretube.R
@@ -109,8 +111,11 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
         if (viewModel.videoFeed.value == null) {
             viewModel.fetchFeed(requireContext(), forceRefresh = false)
         }
-        if (viewModel.subscriptions.value == null) {
-            viewModel.fetchSubscriptions(requireContext())
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.fetchSubscriptions(requireContext())
+            }
         }
 
         // only restore the previous state (i.e. scroll position) the first time the feed is shown
