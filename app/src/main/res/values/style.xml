@@ -222,4 +222,10 @@
         <item name="android:layout_marginStart">16dp</item>
     </style>
 
+    <style name="ToolbarSubscriptionsButton" parent ="Widget.Material3.Button.IconButton.Elevated" >
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="iconGravity">end</item>
+        <item name="iconSize">20dp</item>
+    </style>
 </resources>

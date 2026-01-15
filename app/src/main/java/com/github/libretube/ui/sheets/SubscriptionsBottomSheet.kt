@@ -12,10 +12,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.github.libretube.R
 import com.github.libretube.api.obj.Subscription
-import com.github.libretube.constants.PreferenceKeys
 import com.github.libretube.databinding.SheetSubscriptionsBinding
 import com.github.libretube.extensions.toID
-import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.ui.adapters.SubscriptionChannelAdapter
 import com.github.libretube.ui.models.EditChannelGroupsModel
 import com.github.libretube.ui.models.SubscriptionsViewModel
@@ -33,7 +31,7 @@ class SubscriptionsBottomSheet : ExpandedBottomSheet(R.layout.sheet_subscription
     }
 
     private val selectedChannelGroup
-        get() = PreferenceHelper.getInt(PreferenceKeys.SELECTED_CHANNEL_GROUP, 0)
+        get() = viewModel.selectedChannelGroup
 
     private val searchInputText
         get() = binding.subscriptionsSearchInput.text.toString()
