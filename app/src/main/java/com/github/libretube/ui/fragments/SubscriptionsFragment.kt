@@ -3,8 +3,10 @@ package com.github.libretube.ui.fragments
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.view.View
 import android.widget.LinearLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.os.bundleOf
 import androidx.core.view.children
 import androidx.core.view.isGone
@@ -29,6 +31,7 @@ import com.github.libretube.extensions.toID
 import com.github.libretube.helpers.NavigationHelper
 import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.obj.SelectableOption
+import com.github.libretube.ui.behaviors.FeedTimeStampLayoutBehavior
 import com.github.libretube.ui.adapters.VideoCardsAdapter
 import com.github.libretube.ui.base.DynamicLayoutManagerFragment
 import com.github.libretube.ui.models.EditChannelGroupsModel
@@ -57,6 +60,11 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
 
     private val viewModel: SubscriptionsViewModel by activityViewModels()
     private val channelGroupsModel: EditChannelGroupsModel by activityViewModels()
+    private val prevRefreshedFeedTimeMs
+        get() = PreferenceHelper.getLong(
+            PreferenceKeys.LAST_LOCAL_FEED_REFRESH_TIMESTAMP_MILLIS,
+            System.currentTimeMillis()
+        )
 
     private var isAppBarFullyExpanded = true
 
@@ -100,6 +108,11 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
             isAppBarFullyExpanded = verticalOffset == 0
         }
 
+        (binding.feedTimeStampContainer.layoutParams as CoordinatorLayout.LayoutParams).also {
+            val behavior = it.behavior as FeedTimeStampLayoutBehavior
+            behavior.setOnVisibleListener { updateFeedTimeStamp() }
+        }
+
         // Determine if the child can scroll up
         binding.subRefresh.setOnChildScrollUpCallback { _, _ ->
             !isAppBarFullyExpanded || binding.subFeed.canScrollVertically(-1)
@@ -133,16 +146,20 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
            feed?.firstOrNull { !it.isUpcoming }?.uploaded?.let {
                 PreferenceHelper.updateLastFeedWatchedTime(it, true)
             }
+
+            updateFeedTimeStamp()
         }
 
         viewModel.feedProgress.observe(viewLifecycleOwner) { progress ->
             if (progress == null || progress.currentProgress == progress.total) {
                 toolbarBinding.feedProgressContainer.isGone = true
+                binding.feedTimeStampContainer.isVisible = true
             } else {
                 toolbarBinding.feedProgressContainer.isVisible = true
                 toolbarBinding.feedProgressText.text = "${progress.currentProgress}/${progress.total}"
                 toolbarBinding.feedProgressBar.max = progress.total
                 toolbarBinding.feedProgressBar.progress = progress.currentProgress
+                binding.feedTimeStampContainer.isGone = true
             }
         }
 
@@ -226,6 +243,11 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
             }
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateFeedTimeStamp()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -297,6 +319,23 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
                 toolbarBinding.channelGroups.check(chip.id)
             }
         }
+    }
+
+    private fun updateFeedTimeStamp() {
+        if (viewModel.videoFeed.value.isNullOrEmpty()) {
+            binding.feedTimeStampContainer.isGone == true
+            return
+        }
+
+        val relativeTimeSpanText = DateUtils.getRelativeTimeSpanString(
+            prevRefreshedFeedTimeMs,
+            System.currentTimeMillis(),
+            DateUtils.MINUTE_IN_MILLIS,
+            DateUtils.FORMAT_ABBREV_ALL
+        )
+        binding.feedTimeStampText.text =
+            resources.getString(R.string.feed_timestamp, relativeTimeSpanText)
+
     }
 
     private fun List<StreamItem>.filterByGroup(groupIndex: Int): List<StreamItem> {
