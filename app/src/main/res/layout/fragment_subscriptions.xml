@@ -73,6 +73,33 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/feedTimeStampContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="-8dp"
+                app:cardBackgroundColor="?colorTertiaryContainer"
+                app:cardElevation="12dp"
+                app:contentPadding="8dp"
+                app:contentPaddingBottom="4dp"
+                app:contentPaddingTop="4dp"
+                app:layout_behavior="com.github.libretube.ui.behaviors.FeedTimeStampLayoutBehavior"
+                app:shapeAppearance="?shapeAppearanceCornerSmall">
+
+                <TextView
+                    android:id="@+id/feedTimeStampText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:textAppearance="?textAppearanceLabelSmall"
+                    android:textColor="?colorOnTertiaryContainer" />
+
+            </com.google.android.material.card.MaterialCardView>
+
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
     </com.github.libretube.ui.views.CustomSwipeToRefresh>
+
 </RelativeLayout>
