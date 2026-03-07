@@ -11,6 +11,7 @@ import com.github.libretube.R
 import com.github.libretube.db.obj.SearchHistoryItem
 import com.github.libretube.enums.SearchDataType
 import com.github.libretube.obj.SearchDataItem
+import okhttp3.internal.toImmutableList
 import kotlin.collections.plus
 
 class SearchSuggestionsAdapter(
@@ -30,7 +31,7 @@ class SearchSuggestionsAdapter(
     ) {
         if (historyList == null && suggestionList == null) return
 
-        val oldList = currentList.toList()
+        val oldList = currentList.toImmutableList()
         val histories = historyList ?: oldList.filter { it.type == SearchDataType.HISTORY }
         val suggestions = suggestionList ?: oldList.filter { it.type == SearchDataType.SUGGESTION }
         val newList = (histories + suggestions).distinctBy { it.query }

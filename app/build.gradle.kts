@@ -1,8 +1,8 @@
 import java.util.Properties
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
+    id("kotlin-android")
     id("kotlinx-serialization")
     id("kotlin-parcelize")
     id("androidx.navigation.safeargs.kotlin")
@@ -26,12 +26,12 @@ if (keystoreFileExists) {
 }
 
 android {
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.github.libretube"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 65
         versionName = "0.30.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -95,11 +95,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlin {
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_17
-            javaParameters = true
-        }
+    kotlinOptions {
+        jvmTarget = "17"
     }
 
     packaging {
@@ -115,7 +112,6 @@ android {
 
     buildFeatures {
         buildConfig = true
-        resValues = true
     }
 
     dependenciesInfo {
