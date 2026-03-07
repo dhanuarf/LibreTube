@@ -1196,12 +1196,15 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
 
         // update the subscribed state
         if (streams.uploaderUrl != null) {
+            val contentRoot = baseActivity.findViewById<View>(android.R.id.content)
             binding.playerSubscribe.setupSubscriptionButton(
                 streams.uploaderUrl!!.toID(),
                 streams.uploader,
                 streams.uploaderAvatar,
-                streams.uploaderVerified
+                streams.uploaderVerified,
+                snackbarAnchorView = contentRoot
             )
+
         } else {
             binding.playerSubscribe.isGone = true
         }

@@ -1,6 +1,6 @@
 package com.github.libretube.ui.extensions
 
-import android.widget.TextView
+import android.view.View
 import androidx.core.view.isVisible
 import com.github.libretube.R
 import com.github.libretube.api.SubscriptionHelper
@@ -21,7 +21,8 @@ fun MaterialButton.setupSubscriptionButton(
     channelVerified: Boolean,
     notificationBell: MaterialButton? = null,
     isSubscribed: Boolean? = null,
-    onIsSubscribedChange: (Boolean) -> Unit = {}
+    snackbarAnchorView: View? = null,
+    onIsSubscribedChange: (Boolean) -> Unit = {},
 ) {
     if (channelId == null) return
 
@@ -72,7 +73,7 @@ fun MaterialButton.setupSubscriptionButton(
         if (subscribed) {
             Snackbar
                 .make(
-                    rootView,
+                    snackbarAnchorView?: rootView,
                     context.getString(R.string.unsubscribe_snackbar_message, channelName),
                     1000
                 )
