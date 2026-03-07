@@ -1,8 +1,9 @@
-import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.androidx.navigation.safeargs)
@@ -26,12 +27,12 @@ if (keystoreFileExists) {
 }
 
 android {
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.github.libretube"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 68
         versionName = "31.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -115,7 +116,6 @@ android {
 
     buildFeatures {
         buildConfig = true
-        resValues = true
     }
 
     dependenciesInfo {
