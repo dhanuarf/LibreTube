@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-fun TextView.setupSubscriptionButton(
+fun MaterialButton.setupSubscriptionButton(
     channelId: String?,
     channelName: String,
     channelAvatar: String?,
@@ -32,7 +32,8 @@ fun TextView.setupSubscriptionButton(
     fun updateUIStateAndNotifyObservers() {
         onIsSubscribedChange(subscribed)
 
-        this@setupSubscriptionButton.text =
+        isChecked = subscribed
+        text =
             if (subscribed) context.getString(R.string.unsubscribe)
             else context.getString(R.string.subscribe)
 
@@ -68,19 +69,17 @@ fun TextView.setupSubscriptionButton(
     }
 
     setOnClickListener {
-        CoroutineScope(Dispatchers.Main).launch {
-            if (subscribed) {
-                Snackbar
-                    .make(
-                        rootView,
-                        context.getString(R.string.unsubscribe_snackbar_message, channelName),
-                        1000
-                    )
-                    .setAction(R.string.undo, {
-                        setSubscriptionState(true)
-                    }).show()
-            }
-            setSubscriptionState(!subscribed)
+        if (subscribed) {
+            Snackbar
+                .make(
+                    rootView,
+                    context.getString(R.string.unsubscribe_snackbar_message, channelName),
+                    1000
+                )
+                .setAction(R.string.undo, {
+                    setSubscriptionState(true)
+                }).show()
         }
+        setSubscriptionState(!subscribed)
     }
 }
