@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.Layout
 import android.text.format.DateUtils
 import android.util.AttributeSet
 import android.view.KeyEvent
@@ -276,6 +277,25 @@ class CustomExoPlayerView(
                     // if the video is live, the remaining time is displayed instead of duration
                     updateDisplayedDurationType()
                 }
+            }
+
+            override fun onCues(cueGroup: CueGroup) {
+                super.onCues(cueGroup)
+                val cues = mutableListOf<Cue>()
+                cueGroup.cues.forEach {
+                    it.buildUpon().apply {
+                        // If position anchor is 'undefined', we set the position ourselves
+                        if (positionAnchor == Cue.TYPE_UNSET) {
+//                            setPosition(0f)
+//                            setPositionAnchor(Cue.ANCHOR_TYPE_START)
+//                            // set the rest of position-related parameters to 'undefined' to force
+//                            // the player to use the default position
+                            setLine(Cue.DIMEN_UNSET, Cue.TYPE_UNSET)
+                            setLineAnchor(Cue.TYPE_UNSET)
+                        }
+                    }.build().also { cues.add(it) }
+                }
+                subtitleView?.setCues(cues)
             }
         })
 
