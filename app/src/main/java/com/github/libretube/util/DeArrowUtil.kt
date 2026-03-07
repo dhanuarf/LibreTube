@@ -42,18 +42,15 @@ object DeArrowUtil {
         if (!PreferenceHelper.getBoolean(PreferenceKeys.DEARROW, false)) return streams
 
         val data = fetchDeArrowContent(vidId) ?: return streams
+
         val (newTitle, newThumbnail) = extractTitleAndThumbnail(data)
+        if (newTitle == null && newThumbnail == null) return streams
 
-        response[vidId]?.let { data ->
-            val (newTitle, newThumbnail) = extractTitleAndThumbnail(data)
-            if (newTitle == null && newThumbnail == null) return streams
-
-            val deArrowData = DeArrowData(
-                title = newTitle,
-                thumbnailUrl = newThumbnail
-            )
-            streams.deArrowData = deArrowData
-        }
+        val deArrowData = DeArrowData(
+            title = newTitle,
+            thumbnailUrl = newThumbnail
+        )
+        streams.deArrowData = deArrowData
 
         return streams
     }

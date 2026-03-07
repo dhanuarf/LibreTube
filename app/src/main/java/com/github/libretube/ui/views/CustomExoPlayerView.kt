@@ -28,6 +28,7 @@ import androidx.core.view.marginStart
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.fragment.app.findFragment
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.media3.common.C
 import androidx.media3.common.PlaybackParameters
@@ -423,6 +424,9 @@ class CustomExoPlayerView(
 
         fullscreenResolution = PlayerHelper.getDefaultResolution(context, true)
         noFullscreenResolution = PlayerHelper.getDefaultResolution(context, false)
+
+        binding.captionsBtn.isVisible = true
+        binding.qualityBtn.isVisible = true
     }
 
     private fun syncQueueButtons() {
@@ -433,6 +437,20 @@ class CustomExoPlayerView(
         binding.skipNext.isInvisible = !PlayingQueue.hasNext() || isPlayerLocked
 
         handler.postDelayed(this::syncQueueButtons, 100)
+    }
+
+    fun isCaptionCurrentlyEnabled(): Boolean = player?.let {
+        PlayerHelper.getCurrentPlayedCaptionFormat(it)?.language != null
+    } == true
+
+    fun updateCaptionBtnDrawable(isCaptionEnabled: Boolean? = null) {
+        var isEnabled = isCaptionEnabled ?: isCaptionCurrentlyEnabled()
+
+        val drawable =
+            if (isEnabled == true) R.drawable.ic_caption
+            else R.drawable.ic_caption_off
+
+        binding.captionsBtn.setImageResource(drawable)
     }
 
     /**
@@ -561,6 +579,10 @@ class CustomExoPlayerView(
             .withEndAction {
                 super.hideController()
             }.start()
+
+        if (isFullscreen()) {
+            toggleSystemBars(false)
+        }
     }
 
     override fun showController() {

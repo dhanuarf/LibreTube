@@ -21,6 +21,7 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
+import android.widget.Toast
 import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -55,6 +56,7 @@ import com.github.libretube.api.JsonHelper
 import com.github.libretube.api.obj.ChapterSegment
 import com.github.libretube.api.obj.Segment
 import com.github.libretube.api.obj.Streams
+import com.github.libretube.api.obj.Subtitle
 import com.github.libretube.compat.PictureInPictureCompat
 import com.github.libretube.compat.PictureInPictureParamsCompat
 import com.github.libretube.constants.IntentData
@@ -786,19 +788,26 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
 
         playerControlsBinding.captionsBtn.setOnClickListener {
             // if currently enabled, quick disable on click without opening menu
-            if (binding.player.isCaptionCurrentlyEnabled()) {
-                updateSubtitle(Subtitle(name = getString(R.string.none)))
-                return@setOnClickListener
-            }
+            // maybe TODO
+//            if (binding.player.isCaptionCurrentlyEnabled()) {
+//                updateSubtitle(Subtitle(name = getString(R.string.none)))
+//                return@setOnClickListener
+//            }
 
-            onCaptionsClicked()
+            binding.player.onCaptionsClicked()
         }
 
         playerControlsBinding.qualityBtn.setOnClickListener {
-            onQualityClicked()
+            binding.player.onQualityClicked()
         }
 
     }
+
+//    private fun updateSubtitle(subtitle: Subtitle){
+//        updateCurrentSubtitle(subtitle)
+//        viewModel.currentSubtitle = subtitle
+//        binding.player.updateCaptionBtnDrawable(subtitle.name != getString(R.string.none))
+//    }
 
     private fun updateMaxSheetHeight() {
         val systemBars = baseActivity.getSystemInsets() ?: return
@@ -1216,6 +1225,9 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
         if (binding.playerMotionLayout.progress == 0f && PlayerHelper.autoFullscreenShortsEnabled && streams.isShort) {
             setFullscreen()
         }
+
+        playerControlsBinding.captionsBtn.isVisible = !isOffline
+        playerControlsBinding.qualityBtn.isVisible = !isOffline
     }
 
     private suspend fun showRelatedStreams() {
@@ -1332,126 +1344,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
             baseActivity.requestedOrientation =
                 (requireActivity() as BaseActivity).screenOrientationPref
         }
-    }
-
-    private fun updateSubtitle(subtitle: Subtitle){
-        updateCurrentSubtitle(subtitle)
-        viewModel.currentSubtitle = subtitle
-        binding.player.updateCaptionBtnDrawable(subtitle.name != getString(R.string.none))
-    }
-
-    override fun onCaptionsClicked() {
-        if (!this@PlayerFragment::streams.isInitialized || streams.subtitles.isEmpty()) {
-            Toast.makeText(context, R.string.no_subtitles_available, Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val subtitles = listOf(Subtitle(name = getString(R.string.none))).plus(streams.subtitles)
-
-        BaseBottomSheet()
-            .setSimpleItems(
-                subtitles.map { it.getDisplayName(requireContext()) },
-                preselectedItem = subtitles.firstOrNull {
-                    val roleFlags = PlayerHelper.getSubtitleRoleFlags(it)
-                    val currentSubtitle =
-                        PlayerHelper.getCurrentPlayedCaptionFormat(playerController)
-                    it.code == currentSubtitle?.language && currentSubtitle?.roleFlags == roleFlags
-                }
-                    ?.getDisplayName(requireContext()) ?: getString(R.string.none)
-            ) { index ->
-                val subtitle = subtitles.getOrNull(index) ?: return@setSimpleItems
-                updateSubtitle(subtitle)
-            }
-            .show(childFragmentManager)
-    }
-
-    override fun onQualityClicked() {
-        // get the available resolutions
-        val resolutions = getAvailableResolutions()
-
-        // Dialog for quality selection
-        BaseBottomSheet()
-            .setSimpleItems(
-                resolutions.map(VideoResolution::name),
-                preselectedItem = resolutions.firstOrNull {
-                    it.resolution == binding.player.selectedResolution
-                }?.name ?: getString(R.string.auto_quality)
-            ) { which ->
-                val newResolution = resolutions[which].resolution
-                setPlayerResolution(newResolution, true)
-
-                // save the selected resolution to update on fullscreen change
-                if (noFullscreenResolution != null && commonPlayerViewModel.isFullscreen.value != true) {
-                    noFullscreenResolution = newResolution
-                } else {
-                    fullscreenResolution = newResolution
-                }
-            }
-            .show(childFragmentManager)
-    }
-
-    override fun onAudioStreamClicked() {
-        val context = requireContext()
-        val audioLanguagesAndRoleFlags = PlayerHelper.getAudioLanguagesAndRoleFlagsFromTrackGroups(
-            playerController.currentTracks.groups,
-            false
-        )
-        val audioLanguages = audioLanguagesAndRoleFlags.map {
-            PlayerHelper.getAudioTrackNameFromFormat(context, it)
-        }
-        val baseBottomSheet = BaseBottomSheet()
-
-        if (audioLanguagesAndRoleFlags.isEmpty() || (audioLanguagesAndRoleFlags.size == 1 &&
-                    audioLanguagesAndRoleFlags[0].first == null &&
-                    !PlayerHelper.haveAudioTrackRoleFlagSet(
-                        audioLanguagesAndRoleFlags[0].second
-                    ))
-        ) {
-            // Regardless of audio format or quality, if there is only one audio stream which has
-            // no language and no role flags, it should mean that there is only a single audio
-            // track which has no language or track type set in the video played
-            // Consider it as the default audio track (or unknown)
-            baseBottomSheet.setSimpleItems(
-                listOf(getString(R.string.default_or_unknown_audio_track)),
-                preselectedItem = getString(R.string.default_or_unknown_audio_track),
-                listener = null
-            )
-        } else {
-            baseBottomSheet.setSimpleItems(
-                audioLanguages,
-                preselectedItem = selectedAudioLanguageAndRoleFlags?.let {
-                    PlayerHelper.getAudioTrackNameFromFormat(context, it)
-                },
-            ) { index ->
-                val selectedAudioFormat = audioLanguagesAndRoleFlags[index]
-                playerController.sendCustomCommand(
-                    AbstractPlayerService.runPlayerActionCommand, bundleOf(
-                        PlayerCommand.SET_AUDIO_ROLE_FLAGS.name to selectedAudioFormat.second
-                    )
-                )
-                playerController.sendCustomCommand(
-                    AbstractPlayerService.runPlayerActionCommand, bundleOf(
-                        PlayerCommand.SET_AUDIO_LANGUAGE.name to selectedAudioFormat.first
-                    )
-                )
-                selectedAudioLanguageAndRoleFlags = selectedAudioFormat
-            }
-        }
-
-        baseBottomSheet.show(childFragmentManager)
-    }
-
-    override fun exitFullscreen() {
-        unsetFullscreen()
-    }
-
-    override fun onStatsClicked() {
-        if (!this::streams.isInitialized) return
-
-        val videoStats = PlayerHelper.getVideoStats(playerController.currentTracks, videoId)
-        StatsSheet()
-            .apply { arguments = bundleOf(IntentData.videoStats to videoStats) }
-            .show(childFragmentManager)
     }
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
