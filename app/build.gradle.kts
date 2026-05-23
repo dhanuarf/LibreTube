@@ -27,14 +27,14 @@ if (keystoreFileExists) {
 }
 
 android {
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.github.libretube"
         minSdk = 26
         targetSdk = 35
-        versionCode = 68
-        versionName = "31.2"
+        versionCode = 69
+        versionName = "31.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         resValue("string", "app_name", "LibreTube")
     }
