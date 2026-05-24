@@ -293,8 +293,7 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
                 isCheckable = true
                 text = group.name
                 setOnLongClickListener {
-                    // the index must be increased by one to skip the "all channels" group button
-                    lifecycleScope.launch { playByGroup(index + 1) }
+                    lifecycleScope.launch { playByGroup(index) }
                     true
                 }
             }
