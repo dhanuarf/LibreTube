@@ -32,6 +32,7 @@ import androidx.media3.common.C
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.text.Cue
+import androidx.media3.common.text.CueGroup
 import androidx.media3.session.MediaController
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.CaptionStyleCompat
@@ -367,6 +368,30 @@ class CustomExoPlayerView(
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 super.onIsPlayingChanged(isPlaying)
                 keepScreenOn = isPlaying
+            }
+
+            override fun onCues(cueGroup: CueGroup) {
+                super.onCues(cueGroup)
+                val cues = mutableListOf<Cue>()
+                cueGroup.cues.forEach { cue ->
+                    cue.buildUpon().apply {
+                        // Most of the captions (especially auto-generated ones) fetched by the
+                        // extractor have the `positionAnchor` parameter set to "undefined". And
+                        // by default the ExoPlayer display these subtitles at the top.
+                        // To workaround this, we intercept the cues and set the position ourselves.
+                        if (positionAnchor == Cue.TYPE_UNSET) {
+                            // Set the horizontal position
+                            setPosition(0.5f)
+                            setPositionAnchor(Cue.ANCHOR_TYPE_MIDDLE)
+                            // Set the vertical position parameters to "undefined" to force
+                            // the player to use the default position, which should be at the
+                            // bottom.
+                            setLine(Cue.DIMEN_UNSET, Cue.TYPE_UNSET)
+                            setLineAnchor(Cue.TYPE_UNSET)
+                        }
+                    }.build().also { cues.add(it) }
+                }
+                subtitleView?.setCues(cues)
             }
         })
 
