@@ -49,7 +49,7 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
     // -2: ungrouped
     private var selectedFilterGroup
         set(value) = PreferenceHelper.putInt(PreferenceKeys.SELECTED_CHANNEL_GROUP, value)
-        get() = PreferenceHelper.getInt(PreferenceKeys.SELECTED_CHANNEL_GROUP, -1)
+        get() = PreferenceHelper.getInt(PreferenceKeys.SELECTED_CHANNEL_GROUP, GROUP_FILTER_INDEX_NONE)
 
     private var isAppBarFullyExpanded = true
 
@@ -161,7 +161,11 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
         }
 
         binding.channelGroups.setOnCheckedStateChangeListener { group, _ ->
-            selectedFilterGroup = group.children.indexOfFirst { it.id == group.checkedChipId } - 1 // 0th index is "all" button
+            val selectedChip = group.children.firstOrNull() { it.id == group.checkedChipId }
+            selectedChip?.let {
+                if (it.id == View.NO_ID || it.tag == null) return@setOnCheckedStateChangeListener
+                selectedFilterGroup = it.tag as Int
+            }
 
             lifecycleScope.launch {
                 showFeed(restoreScrollState = false)
@@ -264,15 +268,17 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
 
         val groups = channelGroupsModel.groups.value.orEmpty()
 
-        binding.chipAll.isChecked = selectedFilterGroup == -1
+        binding.chipAll.isChecked = selectedFilterGroup == GROUP_FILTER_INDEX_NONE
+        binding.chipAll.tag = GROUP_FILTER_INDEX_NONE
         binding.chipAll.setOnLongClickListener {
-            lifecycleScope.launch { playByGroup(0) }
+            lifecycleScope.launch { playByGroup(GROUP_FILTER_INDEX_NONE) }
             true
         }
 
-        binding.chipUngrouped.isChecked = selectedFilterGroup == -2
+        binding.chipUngrouped.isChecked = selectedFilterGroup == GROUP_FILTER_INDEX_UNGROUPED
+        binding.chipUngrouped.tag = GROUP_FILTER_INDEX_UNGROUPED
         binding.chipUngrouped.setOnLongClickListener {
-            lifecycleScope.launch { playByGroup(-1) }
+            lifecycleScope.launch { playByGroup(GROUP_FILTER_INDEX_UNGROUPED) }
             true
         }
 
@@ -283,6 +289,7 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
             val chip = layoutInflater.inflate(R.layout.filter_chip, null) as Chip
             chip.apply {
                 id = View.generateViewId()
+                tag = index
                 isCheckable = true
                 text = group.name
                 setOnLongClickListener {
@@ -303,8 +310,8 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
     }
 
     private fun List<StreamItem>.filterByGroup(groupIndex: Int): List<StreamItem> {
-        if (groupIndex == -1) return this
-        if (groupIndex == -2) return filterUngroupedStreamItems(this)
+        if (groupIndex == GROUP_FILTER_INDEX_NONE) return this
+        if (groupIndex == GROUP_FILTER_INDEX_UNGROUPED) return filterUngroupedStreamItems(this)
 
         val group = channelGroupsModel.groups.value?.getOrNull(groupIndex)
         return filter {
@@ -378,5 +385,10 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
 
     fun removeItem(videoId: String) {
         feedAdapter.removeItemById(videoId)
+    }
+
+    companion object {
+        private const val GROUP_FILTER_INDEX_NONE = -1
+        private const val GROUP_FILTER_INDEX_UNGROUPED = -2
     }
 }
