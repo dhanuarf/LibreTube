@@ -5,16 +5,24 @@ import android.os.Parcelable
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.github.libretube.R
 import com.github.libretube.api.SubscriptionHelper
 import com.github.libretube.api.obj.StreamItem
 import com.github.libretube.api.obj.Subscription
+import com.github.libretube.db.obj.SubscriptionGroup
 import com.github.libretube.extensions.TAG
 import com.github.libretube.extensions.toastFromMainDispatcher
 import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.repo.FeedProgress
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SubscriptionsViewModel : ViewModel() {
@@ -22,8 +30,29 @@ class SubscriptionsViewModel : ViewModel() {
 
     var subscriptions = MutableLiveData<List<Subscription>?>()
     val feedProgress = MutableLiveData<FeedProgress?>()
+    val groups = MutableLiveData<List<SubscriptionGroup>>()
+    var groupToEdit: SubscriptionGroup? = null
 
     var subFeedRecyclerViewState: Parcelable? = null
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val subscriptionsData = combine(subscriptions.asFlow(), groups.asFlow()) { subs, groups ->
+        subs to groups
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L),
+            null to null
+        )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val ungrouppedSubscriptions = subscriptionsData.mapLatest { (subs, groups) ->
+        if (subs.isNullOrEmpty() || groups.isNullOrEmpty()) return@mapLatest emptyList<Subscription>()
+        subs.filter { sub -> groups.none { it.channels.contains(sub.url) } }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000L),
+        emptyList()
+    )
 
     fun fetchFeed(context: Context, forceRefresh: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {

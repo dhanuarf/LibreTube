@@ -17,7 +17,6 @@ import com.github.libretube.databinding.SheetSubscriptionsBinding
 import com.github.libretube.extensions.toID
 import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.ui.adapters.SubscriptionChannelAdapter
-import com.github.libretube.ui.models.EditChannelGroupsModel
 import com.github.libretube.ui.models.SubscriptionsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -39,7 +38,6 @@ class SubscriptionsBottomSheet : ExpandedBottomSheet(R.layout.sheet_subscription
         get() = binding.subscriptionsSearchInput.text.toString()
 
     private val viewModel: SubscriptionsViewModel by activityViewModels()
-    private val channelGroupsModel: EditChannelGroupsModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = SheetSubscriptionsBinding.bind(view)
@@ -60,7 +58,7 @@ class SubscriptionsBottomSheet : ExpandedBottomSheet(R.layout.sheet_subscription
                 launch {
                     combine(
                         viewModel.subscriptions.asFlow(),
-                        channelGroupsModel.groups.asFlow(),
+                        viewModel.groups.asFlow(),
                     ) { subscriptions, groups ->
                         subscriptions to groups
                     }
@@ -75,7 +73,7 @@ class SubscriptionsBottomSheet : ExpandedBottomSheet(R.layout.sheet_subscription
     }
 
     private fun getUngroupedChannels(): List<Subscription> {
-        val groups = channelGroupsModel.groups.value.orEmpty()
+        val groups = viewModel.groups.value.orEmpty()
 
         return viewModel.subscriptions.value.orEmpty().filter { subscription ->
             groups.none { it.channels.contains(subscription.url) }
@@ -96,7 +94,7 @@ class SubscriptionsBottomSheet : ExpandedBottomSheet(R.layout.sheet_subscription
         }
 
         // "ungrouped" category is hidden if the user doesn't use channel groups
-        if (!channelGroupsModel.groups.value.isNullOrEmpty()) {
+        if (!viewModel.groups.value.isNullOrEmpty()) {
             binding.ungroupedSubsBtn.text = requireContext().getString(
                 R.string.ungrouped_channels_with_count,
                 viewModel.subscriptions.value?.size ?: 0
@@ -109,7 +107,7 @@ class SubscriptionsBottomSheet : ExpandedBottomSheet(R.layout.sheet_subscription
             binding.ungroupedSubsBtn.isVisible = getUngroupedChannels().isNotEmpty()
         }
 
-        channelGroupsModel.groups.value?.getOrNull(selectedChannelGroup)?.let { channelGroup ->
+        viewModel.groups.value?.getOrNull(selectedChannelGroup)?.let { channelGroup ->
             @SuppressLint("StringFormatInvalid")
             binding.allSubsBtn.text =
                 "%s (%d)".format(
@@ -131,7 +129,7 @@ class SubscriptionsBottomSheet : ExpandedBottomSheet(R.layout.sheet_subscription
 
             binding.groupEditBtn.isVisible = true
             binding.groupEditBtn.setOnClickListener {
-                channelGroupsModel.groupToEdit = channelGroup
+                viewModel.groupToEdit = channelGroup
                 EditChannelGroupSheet()
                     .show(parentFragmentManager, null)
             }
@@ -165,7 +163,7 @@ class SubscriptionsBottomSheet : ExpandedBottomSheet(R.layout.sheet_subscription
         if (groupIndex == -1) return this
         if (groupIndex == -2) return getUngroupedChannels()
 
-        val group = channelGroupsModel.groups.value?.getOrNull(groupIndex)
+        val group = viewModel.groups.value?.getOrNull(groupIndex)
             ?: return this
 
         return filter { group.channels.contains(it.url.toID()) }
