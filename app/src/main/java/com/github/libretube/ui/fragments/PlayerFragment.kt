@@ -814,7 +814,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
             )
         )
 
-        binding.player.player = null
+        binding.player.detachPlayer()
 
         playerController.release()
         killPlayerFragment()
@@ -1429,7 +1429,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
             viewModel.isOrientationChangeInProgress = true
 
             // detach player view from player to stop surface rendering
-            binding.player.player = null
+            binding.player.detachPlayer()
 
             if (::playerController.isInitialized) playerController.release()
 

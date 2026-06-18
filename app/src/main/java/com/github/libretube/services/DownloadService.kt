@@ -17,6 +17,7 @@ import androidx.core.app.NotificationCompat.Builder
 import androidx.core.app.PendingIntentCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.getSystemService
+import androidx.core.util.contains
 import androidx.core.util.keyIterator
 import androidx.core.util.set
 import androidx.core.util.valueIterator
@@ -140,6 +141,7 @@ class DownloadService : LifecycleService() {
             ACTION_DOWNLOAD_RESUME -> resume(downloadId!!)
             ACTION_DOWNLOAD_PAUSE -> pause(downloadId!!)
             ACTION_DOWNLOAD_STOP -> stop(downloadId!!)
+            ACTION_RESUME_ALL -> resumeAll()
         }
 
         registerNetworkChangedCallback()
@@ -440,7 +442,7 @@ class DownloadService : LifecycleService() {
      */
     private fun mayStartNewDownload(): Boolean {
         val downloadCount = downloadQueue.valueIterator().asSequence().count { it }
-        return downloadCount < DownloadHelper.getMaxConcurrentDownloads()
+        return downloadCount < DownloadHelper.MAX_CONCURRENT_DOWNLOADS
     }
 
     /**
@@ -497,6 +499,39 @@ class DownloadService : LifecycleService() {
         }
 
         stopServiceIfDone()
+    }
+
+    /**
+     * Resume all downloads: Queue them all, then fill empty slots.
+     */
+    private fun resumeAll() {
+        lifecycleScope.launch(coroutineContext) {
+            val incompleteItems = withContext(Dispatchers.IO) {
+                Database.downloadDao().getAll()
+                    .flatMap { it.downloadItems }
+                    .filter { !it.isFinished }
+            }
+
+            incompleteItems.forEach {
+                if (!downloadQueue.contains(it.id)) {
+                    downloadQueue.put(it.id, false)
+                }
+            }
+
+            val current = downloadQueue.valueIterator().asSequence().count { it }
+            val slotsToFill = DownloadHelper.MAX_CONCURRENT_DOWNLOADS - current
+
+            if (slotsToFill > 0) {
+                val candidates = incompleteItems.filter { !downloadQueue[it.id] }
+                    .take(slotsToFill)
+
+                candidates.forEach { item ->
+                    launch {
+                        downloadFile(item)
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -696,6 +731,8 @@ class DownloadService : LifecycleService() {
             "com.github.libretube.services.DownloadService.ACTION_SERVICE_STARTED"
         const val ACTION_SERVICE_STOPPED =
             "com.github.libretube.services.DownloadService.ACTION_SERVICE_STOPPED"
+        const val ACTION_RESUME_ALL =
+            "com.github.libretube.services.DownloadService.ACTION_RESUME_ALL"
 
         // any values that are not in that range are strictly rate limited by YT or are very slow due
         // to the amount of requests that's being made

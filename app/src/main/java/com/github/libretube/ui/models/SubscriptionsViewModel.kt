@@ -53,6 +53,8 @@ class SubscriptionsViewModel : ViewModel() {
         SharingStarted.WhileSubscribed(5000L),
         emptyList()
     )
+    val groups = MutableLiveData<List<SubscriptionGroup>>()
+    var groupToEdit: SubscriptionGroup? = null
 
     fun fetchFeed(context: Context, forceRefresh: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {

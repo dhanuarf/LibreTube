@@ -206,7 +206,7 @@ class CustomExoPlayerView(
         this.commonPlayerViewModel = commonPlayerViewModel
         this.viewLifecycleOwner = viewLifecycleOwner
         this.playerCallback = playerCallback
-        this.player = player
+        super.player = player
 
         initializeGestureProgress()
 
@@ -426,6 +426,19 @@ class CustomExoPlayerView(
         }
 
         updateCurrentPosition()
+    }
+
+    /**
+     * @see CustomExoPlayerView.initialize
+     * @see CustomExoPlayerView.detachPlayer
+     */
+    @Deprecated("Use `initialize()` instead to attach `Player` and use `detachPlayer()` to detach it")
+    override fun setPlayer(player: Player?) {
+        super.setPlayer(player)
+    }
+
+    fun detachPlayer(){
+        super.setPlayer(null)
     }
 
     private fun syncQueueButtons() {
