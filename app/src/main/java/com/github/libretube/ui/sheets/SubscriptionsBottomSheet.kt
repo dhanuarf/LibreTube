@@ -97,7 +97,7 @@ class SubscriptionsBottomSheet : ExpandedBottomSheet(R.layout.sheet_subscription
         if (!viewModel.groups.value.isNullOrEmpty()) {
             binding.ungroupedSubsBtn.text = requireContext().getString(
                 R.string.ungrouped_channels_with_count,
-                viewModel.subscriptions.value?.size ?: 0
+                getUngroupedChannels().size
             )
             binding.ungroupedSubsBtn.setOnClickListener {
                 binding.groupEditBtn.isVisible = false
