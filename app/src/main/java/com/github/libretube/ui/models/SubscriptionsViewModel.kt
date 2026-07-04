@@ -30,6 +30,10 @@ class SubscriptionsViewModel : ViewModel() {
     var groupToEdit: SubscriptionGroup? = null
 
     fun fetchFeed(context: Context, forceRefresh: Boolean) {
+        feedProgress.value?.let {
+            if (it.currentProgress != it.total) return
+        }
+
         viewModelScope.launch(Dispatchers.IO) {
             val videoFeed = try {
                 SubscriptionHelper.getFeed(forceRefresh = forceRefresh) { feedProgress ->
