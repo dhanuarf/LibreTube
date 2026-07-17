@@ -1,9 +1,12 @@
 package com.github.libretube.db
 
 import androidx.room.AutoMigration
+import androidx.room.migration.AutoMigrationSpec
+import androidx.room.DeleteColumn
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.github.libretube.db.AppDatabase.MigrationSpec23To25
 import com.github.libretube.db.dao.CustomInstanceDao
 import com.github.libretube.db.dao.DownloadDao
 import com.github.libretube.db.dao.LocalPlaylistsDao
@@ -60,7 +63,7 @@ import com.github.libretube.db.obj.WatchPosition
         AutoMigration(from = 18, to = 19),
         AutoMigration(from = 19, to = 20),
         AutoMigration(from = 20, to = 21),
-        AutoMigration(from = 24, to = 25)
+        AutoMigration(from = 23, to = 25, spec = MigrationSpec23To25::class)
     ]
 )
 @TypeConverters(Converters::class)
@@ -114,4 +117,7 @@ abstract class AppDatabase : RoomDatabase() {
      * Locally cached subscription feed
      */
     abstract fun feedDao(): SubscriptionsFeedDao
+
+    @DeleteColumn(tableName="downloadItem", columnName="url")
+    class MigrationSpec23To25: AutoMigrationSpec
 }
