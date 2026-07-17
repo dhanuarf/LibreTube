@@ -85,7 +85,7 @@ class RawByteStreamDownloadProvider(val url: HttpUrl) : DownloadProvider {
 
                 if (response.code == 403) {
                     response.close()
-                    Log.e(TAG(), "Got HTTP 403 while downloading: ${response.body.string()}")
+                    Log.e(TAG(), "Got HTTP 403 while downloading: ${response.body!!.string()}")
                     return@withContext null
                 } else if (response.code !in 200..299) {
                     response.close()
