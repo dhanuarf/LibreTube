@@ -138,7 +138,6 @@ class ChannelFragment : Fragment(R.layout.fragment_channel) {
             response.avatarUrl,
             response.verified,
             binding.notificationBell,
-            snackbarAnchorView = binding.root
         ) {
             isSubscribed = it
         }

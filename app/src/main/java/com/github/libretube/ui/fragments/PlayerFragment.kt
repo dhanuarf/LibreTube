@@ -1189,7 +1189,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
                 streams.uploader,
                 streams.uploaderAvatar,
                 streams.uploaderVerified,
-                snackbarAnchorView = contentRoot
             )
 
         } else {

@@ -177,7 +177,6 @@ class SearchResultsAdapter(
                 item.name.orEmpty(),
                 item.thumbnail,
                 item.uploaderVerified ?: false,
-                snackbarAnchorView = binding.root
             ) {
                 subscribed = it
             }

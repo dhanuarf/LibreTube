@@ -65,7 +65,6 @@ class SubscriptionChannelAdapter(private val rootView: View) :
                 subscription.verified,
                 notificationBell,
                 !isRecentlyUnsubscribed,
-                snackbarAnchorView = rootView
             ) { isSubscribed ->
                 when (isSubscribed) {
                     true -> if (isRecentlyUnsubscribed) recentlyUnsubscribedList.remove(channelId)
