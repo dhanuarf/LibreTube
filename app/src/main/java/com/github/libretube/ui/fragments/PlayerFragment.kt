@@ -33,6 +33,8 @@ import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.core.os.postDelayed
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
@@ -78,7 +80,6 @@ import com.github.libretube.helpers.NavigationHelper
 import com.github.libretube.helpers.PlayerHelper
 import com.github.libretube.helpers.PlayerHelper.getCurrentSegment
 import com.github.libretube.helpers.ThemeHelper
-import com.github.libretube.helpers.WindowHelper
 import com.github.libretube.obj.ShareData
 import com.github.libretube.parcelable.PlayerData
 import com.github.libretube.services.AbstractPlayerService
@@ -164,25 +165,9 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
     private var isEnteringPiPMode = false
 
     private val baseActivity get() = activity as AbstractPlayerHostActivity
-    private val windowInsetsControllerCompat
-        get() = WindowCompat
+    private val windowInsetsControllerCompat by lazy {
+        WindowCompat
             .getInsetsController(requireActivity().window, requireActivity().window.decorView)
-
-    private val fullscreenDialog by lazy {
-        object : Dialog(requireContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen) {
-            @Deprecated("Deprecated in Java", ReplaceWith("onbackpressedispatcher and callback"))
-            override fun onBackPressed() {
-                unsetFullscreen()
-            }
-
-            override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-                if (_binding?.player?.onKeyUp(keyCode, event) == true) {
-                    return true
-                }
-
-                return super.onKeyUp(keyCode, event)
-            }
-        }
     }
 
     /**
@@ -411,7 +396,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
 
         // manually apply additional padding for edge-to-edge compatibility
         activity?.getSystemInsets()?.let { systemBars ->
-            with(binding.root) {
+            with(binding.playerMotionLayout) {
                 setPadding(
                     paddingLeft,
                     paddingTop + systemBars.top,
@@ -420,7 +405,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
                 )
             }
         }
-
 
         val playerData = requireArguments().parcelable<PlayerData>(IntentData.playerData)!!
         videoId = playerData.videoId!!
@@ -837,7 +821,9 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
 
         commonPlayerViewModel.setSheetExpand(null)
 
-        openOrCloseFullscreenDialog(true)
+        switchFullscreenPlayerView(true)
+
+        toggleSystemBars(false)
 
         binding.player.updateMarginsByFullscreenMode()
     }
@@ -852,13 +838,26 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
             baseActivity.requestedOrientation = baseActivity.screenOrientationPref
         }
 
-        openOrCloseFullscreenDialog(false)
+        switchFullscreenPlayerView(false)
+
+        toggleSystemBars(true)
 
         binding.player.updateMarginsByFullscreenMode()
 
         // set status bar icon color back to theme color after fullscreen dialog closed!
         windowInsetsControllerCompat.isAppearanceLightStatusBars =
             !ThemeHelper.isDarkMode(requireContext())
+    }
+
+    private fun toggleSystemBars(show: Boolean) {
+        windowInsetsControllerCompat.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
+        if (show) {
+            windowInsetsControllerCompat.show(WindowInsetsCompat.Type.systemBars())
+        } else {
+            windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())
+        }
     }
 
     /**
@@ -877,24 +876,22 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
         }
     }
 
-    private fun openOrCloseFullscreenDialog(open: Boolean) {
+    private fun switchFullscreenPlayerView(isFullscreen: Boolean) {
         val playerView = binding.player
         (playerView.parent as ViewGroup).removeView(playerView)
+        binding.fullscreenPlayerContainer.isVisible = isFullscreen
+        binding.playerMotionLayout.isGone = isFullscreen
 
-        if (open) {
-            fullscreenDialog.addContentView(
-                binding.player,
-                LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+        if (isFullscreen) {
+            binding.fullscreenPlayerContainer.addView(
+                playerView, LayoutParams(
+                    LayoutParams.MATCH_PARENT,
+                    LayoutParams.MATCH_PARENT,
+                )
             )
-            fullscreenDialog.show()
-            playerView.currentWindow = fullscreenDialog.window
         } else {
             binding.playerMotionLayout.addView(playerView)
-            playerView.currentWindow = null
-            fullscreenDialog.dismiss()
         }
-
-        WindowHelper.toggleFullscreen(fullscreenDialog.window!!, open)
     }
 
     override fun onPause() {
@@ -982,10 +979,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
             // disable the auto PiP mode for SDK >= 32
             PictureInPictureCompat
                 .setPictureInPictureParams(requireActivity(), pipParams)
-        }
-
-        runCatching {
-            if (fullscreenDialog.isShowing) fullscreenDialog.dismiss()
         }
 
         runCatching {
@@ -1353,7 +1346,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
 
             binding.player.updateCurrentSubtitle(null)
 
-            openOrCloseFullscreenDialog(true)
+            switchFullscreenPlayerView(true)
             pipActivity = activity
         } else {
             binding.player.useController = true
@@ -1369,7 +1362,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
 
             // unset fullscreen if it's not been enabled before the start of PiP
             if (commonPlayerViewModel.isFullscreen.value != true) {
-                openOrCloseFullscreenDialog(false)
+                switchFullscreenPlayerView(false)
             }
         }
     }
