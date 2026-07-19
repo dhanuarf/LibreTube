@@ -70,16 +70,20 @@ fun MaterialButton.setupSubscriptionButton(
     }
 
     setOnClickListener {
-        if (subscribed) {
-            Snackbar
-                .make(
-                    snackbarAnchorView?: rootView,
-                    context.getString(R.string.unsubscribe_snackbar_message, channelName),
-                    1000
-                )
-                .setAction(R.string.undo, {
-                    setSubscriptionState(true)
-                }).show()
+        CoroutineScope(Dispatchers.Main).launch {
+            if (subscribed) {
+                Snackbar
+                    .make(
+                        context,
+                        rootView,
+                        context.getString(R.string.unsubscribe_snackbar_message, channelName),
+                        1000
+                    )
+                    .setAction(R.string.undo, {
+                        setSubscriptionState(true)
+                    }).show()
+            }
+            setSubscriptionState(!subscribed)
         }
         setSubscriptionState(!subscribed)
     }
