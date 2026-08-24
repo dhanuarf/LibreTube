@@ -24,15 +24,19 @@ open class DismissableTimeBar(
     var exoPlayer: Player? = null
 
     private val listeners = mutableListOf<OnScrubListener>()
-
-    // Drag-only seeking state
-    private var initialX: Float = 0f
-    private var initialY: Float = 0f
+    private val touchSlopPx: Int = ViewConfiguration.get(context).scaledTouchSlop
+    private val thumbXPosition = AtomicInteger(0)
+    
     private var shouldPlayerSeek: Boolean = true
     private var scrubTriggered: Boolean = false
-    private val touchSlopPx: Int = ViewConfiguration.get(context).scaledTouchSlop
+    private var initialX: Float = 0f
+    private var initialY: Float = 0f
     private var timeDistancePerPixel: Float = 0f
-    private val thumbXPosition = AtomicInteger(0)
+    private var scrubTriggerStartDx: Float = 0f
+    private var boundLeft: Int = -1
+    private var boundRight: Int = -1
+    private var currentWidth: Int = -1
+    private var currentDuration: Long = -1L
 
     init {
         super.addListener(object : OnScrubListener {
@@ -70,10 +74,11 @@ open class DismissableTimeBar(
                     // make sure that the user dragged at least touchSlopPx pixels
                     // which is the minimum amount to trigger a drag event
                     if (dx.absoluteValue > touchSlopPx) {
+                        scrubTriggerStartDx = dx
                         // Begin scrubbing now by synthesizing a DOWN at the current progress X
                         val fakeDown = MotionEvent.obtain(event).apply {
                             action = MotionEvent.ACTION_DOWN
-                            setLocation(thumbXPosition.get() + dx, event.y)
+                            setLocation(thumbXPosition.get() + dx - scrubTriggerStartDx, event.y)
                         }
                         val handled = super.onTouchEvent(fakeDown)
                         fakeDown.recycle()
@@ -86,7 +91,7 @@ open class DismissableTimeBar(
                 else {
                     val fakeMove = MotionEvent.obtain(event).apply {
                         action = MotionEvent.ACTION_MOVE
-                        setLocation(thumbXPosition.get() + dx, event.y)
+                        setLocation(thumbXPosition.get() + dx - scrubTriggerStartDx, event.y)
                     }
                     val handled = super.onTouchEvent(fakeMove)
                     fakeMove.recycle()
@@ -106,6 +111,7 @@ open class DismissableTimeBar(
                 }
 
                 scrubTriggered = false
+                scrubTriggerStartDx = 0f
                 performClick()
 
                 return true
@@ -148,23 +154,45 @@ open class DismissableTimeBar(
     fun setPlayer(player: Player) {
         this.exoPlayer = player
     }
-
-    override fun setDuration(duration: Long) {
-        super.setDuration(duration)
-        fun calcTimeDistancePerPixel() {
-            timeDistancePerPixel = duration/width.toFloat()
-        }
-        calcTimeDistancePerPixel()
-        if (width == 0) {
-            doOnPreDraw {
-                calcTimeDistancePerPixel()
+    
+    private fun calculateTimeDistancePerPx(duration: Long): Float {
+        return duration/(boundRight - boundLeft).toFloat()
+    }
+    
+    private fun areBoundsInitialized(): Boolean {
+        return boundLeft != -1 && boundRight != -1
+    }
+    
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        val width = right - left
+        if (!areBoundsInitialized() || currentWidth != width) {
+            boundLeft = getPaddingLeft()
+            boundRight = width - getPaddingRight()
+            currentWidth = width
+            if (currentDuration != -1L) {
+                timeDistancePerPixel = calculateTimeDistancePerPx(currentDuration)
             }
         }
     }
-
+    
+    override fun setDuration(duration: Long) {
+        super.setDuration(duration)
+        currentDuration = duration;
+        if (!areBoundsInitialized()) return
+        
+        timeDistancePerPixel = calculateTimeDistancePerPx(duration)
+    }
+    
     override fun setPosition(position: Long) {
         super.setPosition(position)
-        thumbXPosition.set((position / timeDistancePerPixel).toInt())
+        if (!areBoundsInitialized() || timeDistancePerPixel == 0f) return;
+        
+        // Coerce the max value. the DefaultTimeBar has bounds check and the right side bound is
+        // exclusive, hence `boundRight -1`
+        val timeRelativePosX = (boundLeft + (position / timeDistancePerPixel).toInt())
+                .coerceAtMost(boundRight - 1)
+        thumbXPosition.set(timeRelativePosX)
     }
 
     companion object {
