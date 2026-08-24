@@ -29,6 +29,7 @@ class SeekbarPreviewListener(
     private var prevProcessPreviewJob : Job? = null
 
     override fun onScrubStart(timeBar: TimeBar, position: Long) {
+        playerBinding.seekbarPreview.isVisible = true
         processPreview(position)
     }
 
@@ -81,7 +82,6 @@ class SeekbarPreviewListener(
             withContext(Dispatchers.Main) {
                 playerBinding.previewProgressIndicator.isInvisible = true
                 playerBinding.seekbarPreviewImage.setImageBitmap(frame)
-                playerBinding.seekbarPreview.isVisible = true
             }
         }
     }
