@@ -191,6 +191,7 @@
                 android:id="@+id/seekbar_preview_image"
                 android:layout_width="140dp"
                 android:layout_height="wrap_content"
+                android:maxHeight="100dp"
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Small" />
