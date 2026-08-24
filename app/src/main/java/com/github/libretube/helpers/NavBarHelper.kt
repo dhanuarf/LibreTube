@@ -2,6 +2,7 @@ package com.github.libretube.helpers
 
 import android.content.Context
 import android.util.Log
+import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.PopupMenu
@@ -13,7 +14,6 @@ import com.github.libretube.R
 import com.github.libretube.constants.PreferenceKeys
 import com.github.libretube.ui.dialogs.NavBarItem
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.navigation.NavigationBarView
 
 object NavBarHelper {
 
@@ -73,21 +73,18 @@ object NavBarHelper {
      * @return Id of the start fragment
      */
     fun applyNavBarStyle(bottomNav: BottomNavigationView): Int {
-        val labelVisibilityMode = when (
-            PreferenceHelper.getString(PreferenceKeys.LABEL_VISIBILITY, "selected")
-        ) {
-            "always" -> NavigationBarView.LABEL_VISIBILITY_LABELED
-            "selected" -> NavigationBarView.LABEL_VISIBILITY_SELECTED
-            "never" -> NavigationBarView.LABEL_VISIBILITY_UNLABELED
-            else -> NavigationBarView.LABEL_VISIBILITY_AUTO
-        }
-        bottomNav.labelVisibilityMode = labelVisibilityMode
-
         val navBarItems = getNavBarItemPreference(bottomNav.context)
         val startFragmentId = getStartFragmentId(bottomNav.context)
 
+        // copy menu items 1:1, but add them in user-preferred order
         navBarItems.forEach { (menuItemId, isVisible) ->
-            bottomNav.menu.findItem(menuItemId).isVisible = isVisible
+            val oldMenuItem = bottomNav.menu.findItem(menuItemId)
+            bottomNav.menu.removeItem(oldMenuItem.itemId)
+
+            // we re-add all items, even if they're hidden, otherwise the nav graph breaks
+            val newMenuItem = bottomNav.menu.add(oldMenuItem.groupId, oldMenuItem.itemId, Menu.NONE, oldMenuItem.title)
+            newMenuItem.icon = oldMenuItem.icon
+            newMenuItem.isVisible = isVisible
         }
         if (navBarItems.none { (_, isVisible) -> isVisible }) bottomNav.isGone = true
 

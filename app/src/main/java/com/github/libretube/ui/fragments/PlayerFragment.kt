@@ -207,12 +207,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
 
     private val playerListener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            if (PlayerHelper.pipEnabled || PictureInPictureCompat.isInPictureInPictureMode(
-                    baseActivity
-                )
-            ) {
-                PictureInPictureCompat.setPictureInPictureParams(requireActivity(), pipParams)
-            }
+            PictureInPictureCompat.setPictureInPictureParams(requireActivity(), pipParams)
 
             if (isPlaying && PlayerHelper.sponsorBlockEnabled) {
                 handler.postDelayed(
@@ -257,7 +252,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
             }
 
             // listen for the stop button in the notification
-            if (playbackState == PlaybackState.STATE_STOPPED && PlayerHelper.pipEnabled &&
+            if (playbackState == PlaybackState.STATE_STOPPED &&
                 PictureInPictureCompat.isInPictureInPictureMode(requireActivity())
             ) {
                 // finish PiP by finishing the activity
@@ -633,9 +628,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
             }
 
         val activity = requireActivity()
-        if (PlayerHelper.pipEnabled) {
-            PictureInPictureCompat.setPictureInPictureParams(activity, pipParams)
-        }
+        PictureInPictureCompat.setPictureInPictureParams(activity, pipParams)
     }
 
     private fun closeMiniPlayer() {
@@ -700,8 +693,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
             switchToAudioMode()
         }
 
-        binding.relPlayerPip.isVisible =
-            PictureInPictureCompat.isPictureInPictureAvailable(requireContext())
+        binding.relPlayerPip.isVisible = isPipAvailable()
 
         binding.relPlayerPip.setOnClickListener {
             PictureInPictureCompat.enterPictureInPictureMode(requireActivity(), pipParams)
@@ -900,7 +892,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
 
         // disable video stream since it's not needed when screen off or when PiP is not
         // enabled, except when the user is intentionally entering PiP mode via the dedicated button
-        if ((!isInteractive || !PlayerHelper.pipEnabled) && !isEnteringPiPMode) {
+        if (!isInteractive && !isEnteringPiPMode) {
             // disable the autoplay countdown while the screen is off or when PiP is not enabled
             setAutoPlayCountdownEnabled(false)
 
@@ -908,13 +900,9 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
             setVideoTrackTypeDisabled(true)
         }
 
-        val shouldPausePlayer =
-            (isInteractive && PlayerHelper.pauseOnQuit) ||
-                    (!isInteractive && PlayerHelper.pausePlayerOnScreenOffEnabled)
-
         // pause player if screen off or app is put the background, except when
         // the user is intentionally entering PiP mode via the dedicated button
-        if (shouldPausePlayer && !isEnteringPiPMode) {
+        if (PlayerHelper.pausePlayerOnScreenOffEnabled && !isInteractive && !isEnteringPiPMode) {
             playerController.pause()
         }
 
@@ -975,8 +963,10 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
             playerController.release()
         }
 
-        if (PlayerHelper.pipEnabled) {
-            // disable the auto PiP mode for SDK >= 32
+        // disable the auto PiP mode for SDK >= 32
+        // wrapped in runCatching since the activity may already be finishing/destroyed
+        // at this point, which makes the system throw an IllegalStateException
+        runCatching {
             PictureInPictureCompat
                 .setPictureInPictureParams(requireActivity(), pipParams)
         }
@@ -1044,7 +1034,9 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
                     SbSkipOptions.MANUAL
                 ) || autoSkipTemporarilyDisabled
             ) {
-                playerBackgroundBinding.sbSkipBtn.isVisible = true
+                if (!PictureInPictureCompat.isInPictureInPictureMode(requireActivity())) {
+                    playerBackgroundBinding.sbSkipBtn.isVisible = true
+                }
                 playerBackgroundBinding.sbSkipBtn.setOnClickListener {
                     playerController.seekTo((segment.segmentStartAndEnd.second * 1000f).toLong())
                     segment.skipped = true
@@ -1137,8 +1129,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
 
         if (binding.playerMotionLayout.progress != 1.0f) {
             // show controllers when not in picture in picture mode
-            val inPipMode = PlayerHelper.pipEnabled &&
-                    PictureInPictureCompat.isInPictureInPictureMode(requireActivity())
+            val inPipMode = PictureInPictureCompat.isInPictureInPictureMode(requireActivity())
             if (!inPipMode) {
                 binding.player.useController = true
             }
@@ -1345,6 +1336,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
             disableController()
 
             binding.player.updateCurrentSubtitle(null)
+            playerBackgroundBinding.sbSkipBtn.isGone = true
 
             switchFullscreenPlayerView(true)
             pipActivity = activity
@@ -1370,8 +1362,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
     fun onUserLeaveHint() {
         if (shouldStartPiP()) {
             PictureInPictureCompat.enterPictureInPictureMode(requireActivity(), pipParams)
-        } else if (PlayerHelper.pauseOnQuit) {
-            playerController.pause()
         }
     }
 
@@ -1386,7 +1376,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
                         isPlaying
                     )
                 )
-                .setAutoEnterEnabled(PlayerHelper.pipEnabled && isPlaying)
+                .setAutoEnterEnabled(isPlaying)
                 .apply {
                     if (isPlaying) {
                         setAspectRatio(playerController.videoSize)
@@ -1398,12 +1388,12 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
     /**
      * Detect whether PiP is supported and enabled
      */
-    private fun shouldUsePip(): Boolean {
-        return PictureInPictureCompat.isPictureInPictureAvailable(requireContext()) && PlayerHelper.pipEnabled
+    private fun isPipAvailable(): Boolean {
+        return PictureInPictureCompat.isPictureInPictureAvailable(requireContext())
     }
 
     private fun shouldStartPiP(): Boolean {
-        return shouldUsePip() && ::playerController.isInitialized && playerController.isPlaying
+        return isPipAvailable() && ::playerController.isInitialized && playerController.isPlaying
     }
 
     /**
