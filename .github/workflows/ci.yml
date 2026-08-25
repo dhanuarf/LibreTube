@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - kuuh
+      - master-kuuh
     paths-ignore:
       - "README*.md"
       - "fastlane/**"
