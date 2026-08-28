@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.text.format.DateUtils
 import android.util.AttributeSet
 import android.view.KeyEvent
@@ -110,6 +111,8 @@ class CustomExoPlayerView(
     private var fullscreenGestureAnimationController: FullscreenGestureAnimationController
     private var chaptersBottomSheet: ChaptersBottomSheet? = null
     private var scrubbingTimeBar = false
+    private var lastDoublePressMs = 0L
+    private var lastDoubleTapSeekDirection = 0
 
     /**
      * Objects from the parent fragment
@@ -856,11 +859,6 @@ class CustomExoPlayerView(
             .setDuration(0)
             .start()
 
-        textView.animate()
-            .translationX(0f)
-            .setDuration(0)
-            .start()
-
         // start the rotate animation of the drawable
         imageView.animate()
             .rotation(direction * 30F)
@@ -873,20 +871,6 @@ class CustomExoPlayerView(
                     .start()
             }
             .start()
-
-        // animate the text view to move outside the image view
-        textView.animate()
-            .translationX(direction * 100f)
-            .setDuration((ANIMATION_DURATION * 1.5).toLong())
-            .withEndAction {
-                // move the text back into the button
-                runnableHandler.postDelayed(100) {
-                    textView.animate()
-                        .setDuration(ANIMATION_DURATION / 2)
-                        .translationX(0f)
-                        .start()
-                }
-            }
     }
 
     private fun initializeGestureProgress() {
@@ -1278,13 +1262,26 @@ class CustomExoPlayerView(
         }
     }
 
-    override fun onSingleTap(areControlsLocked: Boolean) {
+    override fun onSingleTapConfirmed(areControlsLocked: Boolean) {
         if (areControlsLocked) {
             // keep showing the 'locked' icon
             toggleController(true)
             return
         }
         toggleController()
+    }
+    
+    override fun onSingleTapUp(): Boolean {
+        val shouldIncrementSeek = lastDoublePressMs.takeIf { it > 0L }
+            ?.let {
+                val now = SystemClock.uptimeMillis()
+                now - lastDoublePressMs < DOUBLE_TAP_REPEAT_TIME_THRESHOLD_MILLIS
+            }
+        if (shouldIncrementSeek != true) return false
+        
+        if (lastDoubleTapSeekDirection > 0) onDoubleTapRightScreen()
+        else if (lastDoubleTapSeekDirection < 0) onDoubleTapLeftScreen()   
+        return true
     }
 
     override fun onDoubleTapCenterScreen() {
@@ -1294,11 +1291,17 @@ class CustomExoPlayerView(
     override fun onDoubleTapLeftScreen() {
         if (!PlayerHelper.doubleTapToSeek) return
         rewind()
+        toggleController(true)
+        lastDoublePressMs = SystemClock.uptimeMillis()
+        lastDoubleTapSeekDirection = -1
     }
 
     override fun onDoubleTapRightScreen() {
         if (!PlayerHelper.doubleTapToSeek) return
         forward()
+        toggleController(true)
+        lastDoublePressMs = SystemClock.uptimeMillis()
+        lastDoubleTapSeekDirection = 1
     }
 
     override fun onSwipeLeftScreen(distanceY: Float, positionY: Float) {
@@ -1513,6 +1516,10 @@ class CustomExoPlayerView(
         private const val HIDE_FORWARD_BUTTON_TOKEN = "hideForwardButton"
         private const val HIDE_REWIND_BUTTON_TOKEN = "hideRewindButton"
         private const val UPDATE_POSITION_TOKEN = "updatePosition"
+        /**
+         * After a double click was processed, the user may use single clicks to trigger another double click.
+         */
+        private const val DOUBLE_TAP_REPEAT_TIME_THRESHOLD_MILLIS = 700
 
         private const val SUBTITLE_BOTTOM_PADDING_FRACTION = 0.158f
         private const val ANIMATION_DURATION = 100L

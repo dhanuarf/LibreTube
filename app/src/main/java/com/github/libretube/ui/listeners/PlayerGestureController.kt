@@ -31,8 +31,6 @@ class PlayerGestureController(activity: BaseActivity, private val listener: Play
     private var scaleGestureWasInProgress = false
     private var isMoving = false
     var longPressInProgress = false
-    var lastDoublePressTime: Instant? = null
-
     var areControlsLocked = false
 
     init {
@@ -59,7 +57,7 @@ class PlayerGestureController(activity: BaseActivity, private val listener: Play
 
                 if (areControlsLocked) {
                     // notify the listener that the player controls are currently locked
-                    listener.onSingleTap(true)
+                    listener.onSingleTapConfirmed(true)
 
                     // controls locked, no need to consume this event
                     return false
@@ -167,30 +165,15 @@ class PlayerGestureController(activity: BaseActivity, private val listener: Play
                 }
             }
 
-            lastDoublePressTime = Instant.now()
-
             return true
+        }
+        
+        override fun onSingleTapUp(e: MotionEvent): Boolean {
+            return listener.onSingleTapUp()
         }
 
         override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-            // if there has been a recent double click within the threshold, single clicks
-            // are being treated as a repetition of the double click
-            // e.g. this allows to continue seeking forward using single clicks after double-clicking once
-            lastDoublePressTime?.takeIf {
-                val millisElapsedSinceDoubleClick = Instant.now().toEpochMilli() - it.toEpochMilli()
-                millisElapsedSinceDoubleClick < DOUBLE_TAP_REPEAT_TIME_THRESHOLD_MILLIS
-            }?.let {
-                val upEvent = MotionEvent.obtain(e).apply {
-                    action = MotionEvent.ACTION_UP
-                }
-                onDoubleTapEvent(upEvent)
-                upEvent.recycle()
-
-                lastDoublePressTime = Instant.now()
-                return true
-            }
-
-            listener.onSingleTap(false)
+            listener.onSingleTapConfirmed(false)
 
             return true
         }
@@ -240,10 +223,5 @@ class PlayerGestureController(activity: BaseActivity, private val listener: Play
         private const val BORDER_THRESHOLD = 90
         private const val LEFT_AREA_VIEW_PERCENTAGE = 0.35f
         private const val RIGHT_AREA_VIEW_PERCENTAGE = 0.65f
-
-        /**
-         * After a double click was processed, the user may use single clicks to trigger another double click.
-         */
-        private const val DOUBLE_TAP_REPEAT_TIME_THRESHOLD_MILLIS = 700
     }
 }
