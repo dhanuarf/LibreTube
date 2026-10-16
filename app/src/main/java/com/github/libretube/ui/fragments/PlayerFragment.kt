@@ -696,7 +696,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
         binding.relPlayerPip.isVisible = isPipAvailable()
 
         binding.relPlayerPip.setOnClickListener {
-            PictureInPictureCompat.enterPictureInPictureMode(requireActivity(), pipParams)
+            //PictureInPictureCompat.enterPictureInPictureMode(requireActivity(), pipParams)
             isEnteringPiPMode = true
         }
 
@@ -1361,7 +1361,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
 
     fun onUserLeaveHint() {
         if (shouldStartPiP()) {
-            PictureInPictureCompat.enterPictureInPictureMode(requireActivity(), pipParams)
+            // PictureInPictureCompat.enterPictureInPictureMode(requireActivity(), pipParams)
         }
     }
 
