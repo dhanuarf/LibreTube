@@ -61,7 +61,6 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.math.max
 import kotlin.math.roundToInt
-import kotlin.time.Clock
 
 object PlayerHelper {
     private const val ACTION_MEDIA_CONTROL = "media_control"
@@ -846,7 +845,7 @@ object PlayerHelper {
                 player.currentPosition,
                 player.duration.div(1000)
             ),
-            addedDate = Clock.System.now().toEpochMilliseconds(),
+            addedDate = System.currentTimeMillis(),
             positionMillis = player.currentPosition
         )
         CoroutineScope(Dispatchers.IO).launch {

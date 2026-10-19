@@ -104,7 +104,7 @@ class DataManagementSettings : BasePreferenceFragment() {
 
         // clear search history when history is disabled
         val searchHistory = findPreference<Preference>(PreferenceKeys.SEARCH_HISTORY_TOGGLE)
-        searchHistory?.onPreferenceChangeListener = { _, newValue ->
+        searchHistory?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
             if (!(newValue as Boolean)) {
                 lifecycleScope.launch(Dispatchers.IO) { Database.searchHistoryDao().deleteAll() }
             }
