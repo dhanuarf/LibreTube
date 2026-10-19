@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Resources
+import android.graphics.Canvas
+import android.graphics.Color
 import android.net.Uri
 import android.os.Looper
 import android.util.Base64
@@ -13,10 +15,14 @@ import android.view.accessibility.CaptioningManager
 import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.annotation.StringRes
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.PendingIntentCompat
 import androidx.core.app.RemoteActionCompat
 import androidx.core.content.getSystemService
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.BlendModeColorFilterCompat
+import androidx.core.graphics.BlendModeCompat
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
@@ -50,6 +56,7 @@ import com.github.libretube.db.DatabaseHelper
 import com.github.libretube.enums.PlayerEvent
 import com.github.libretube.enums.SbSkipOptions
 import com.github.libretube.extensions.TAG
+import com.github.libretube.extensions.dpToPx
 import com.github.libretube.extensions.seekBy
 import com.github.libretube.extensions.togglePlayPauseState
 import com.github.libretube.obj.VideoStats
@@ -363,6 +370,25 @@ object PlayerHelper {
         return context.packageName + "." + ACTION_MEDIA_CONTROL
     }
 
+    private fun createPipActionIcon(context: Context, resId: Int): IconCompat {
+        val drawable = AppCompatResources.getDrawable(context, resId)
+            ?: throw IllegalArgumentException("Invalid resource ID")
+
+        val bitmap = createBitmap(
+            drawable.intrinsicWidth.coerceIn(1, 18f.dpToPx()),
+            drawable.intrinsicHeight.coerceIn(1, 18f.dpToPx()),
+        )
+
+        val canvas = Canvas(bitmap)
+        val filter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
+            Color.WHITE, BlendModeCompat.SRC_IN
+        )
+        drawable.mutate().colorFilter = filter
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return IconCompat.createWithBitmap(bitmap)
+    }
+
     private fun getRemoteAction(
         activity: Activity,
         icon: IconCompat,
@@ -371,7 +397,7 @@ object PlayerHelper {
     ): RemoteActionCompat {
         val intent = Intent(getIntentActionName(activity))
             .setPackage(activity.packageName)
-            .putExtra(CONTROL_TYPE, event)
+            .putExtra(CONTROL_TYPE, event.name)
         val pendingIntent =
             PendingIntentCompat.getBroadcast(activity, event.ordinal, intent, 0, false)!!
 
@@ -380,9 +406,13 @@ object PlayerHelper {
     }
 
     private fun seekIconWithSpeed(resources: Resources, @DrawableRes resourceId: Int): IconCompat {
-        val textSize = 15 * resources.displayMetrics.density
-        val bitmap = ResourcesCompat.getDrawable(resources, resourceId, null)!!.toBitmap()
-        ImageHelper.insertText(bitmap, seekIncrement.div(1000).toString(), 0.5f, 0.65f, textSize)
+        val bitmap = ResourcesCompat.getDrawable(resources, resourceId, null)!!.run {
+            toBitmap(
+                intrinsicWidth.coerceIn(1, 18f.dpToPx()),
+                intrinsicHeight.coerceIn(1, 18f.dpToPx()),
+                android.graphics.Bitmap.Config.ARGB_8888
+            )
+        }
         return IconCompat.createWithBitmap(bitmap)
     }
 
@@ -392,7 +422,7 @@ object PlayerHelper {
     fun getPiPModeActions(activity: Activity, isPlaying: Boolean): List<RemoteActionCompat> {
         val audioModeAction = getRemoteAction(
             activity,
-            IconCompat.createWithResource(activity, R.drawable.ic_headphones),
+            createPipActionIcon(activity, R.drawable.ic_headphones),
             R.string.background_mode,
             PlayerEvent.Background
         )
@@ -407,14 +437,14 @@ object PlayerHelper {
 
         val playPauseAction = getRemoteAction(
             activity,
-            IconCompat.createWithResource(activity, if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
+            createPipActionIcon(activity, if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
             if (isPlaying) R.string.resume else R.string.pause,
             PlayerEvent.PlayPause
         )
 
         val skipNextAction = getRemoteAction(
             activity,
-            IconCompat.createWithResource(activity, R.drawable.ic_next),
+            createPipActionIcon(activity, R.drawable.ic_next),
             R.string.play_next,
             PlayerEvent.Next
         )
