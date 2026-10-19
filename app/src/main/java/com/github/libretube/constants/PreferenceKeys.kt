@@ -40,6 +40,7 @@ object PreferenceKeys {
     const val DELETE_ACCOUNT = "delete_account"
 
     // Player behavior
+    const val PAUSE_ON_MINIMIZE = "pause_on_minimize"
     const val AUTO_FULLSCREEN = "auto_fullscreen"
     const val AUTOPLAY = "autoplay"
     const val RELATED_STREAMS = "related_streams_toggle"

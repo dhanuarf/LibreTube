@@ -76,6 +76,13 @@
             app:key="autoplay_countdown"
             app:title="@string/autoplay_countdown" />
 
+        <SwitchPreferenceCompat
+            android:icon="@drawable/ic_pause_circle"
+            android:summary="Pause playback when the app minimized. If disabled, the app will enter Picture-in-Picture (PiP) mode"
+            app:defaultValue="true"
+            app:key="pause_on_minimize"
+            app:title="Pause on minimize" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/captions">

@@ -63,6 +63,7 @@ import com.github.libretube.api.obj.Streams
 import com.github.libretube.compat.PictureInPictureCompat
 import com.github.libretube.compat.PictureInPictureParamsCompat
 import com.github.libretube.constants.IntentData
+import com.github.libretube.constants.PreferenceKeys
 import com.github.libretube.databinding.FragmentPlayerBinding
 import com.github.libretube.db.DatabaseHolder
 import com.github.libretube.enums.FileType
@@ -82,6 +83,7 @@ import com.github.libretube.helpers.ImageHelper
 import com.github.libretube.helpers.NavigationHelper
 import com.github.libretube.helpers.PlayerHelper
 import com.github.libretube.helpers.PlayerHelper.getCurrentSegment
+import com.github.libretube.helpers.PreferenceHelper
 import com.github.libretube.helpers.ThemeHelper
 import com.github.libretube.obj.ShareData
 import com.github.libretube.parcelable.PlayerData
@@ -708,7 +710,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
         binding.relPlayerPip.isVisible = isPipAvailable()
 
         binding.relPlayerPip.setOnClickListener {
-            //PictureInPictureCompat.enterPictureInPictureMode(requireActivity(), pipParams)
+            PictureInPictureCompat.enterPictureInPictureMode(requireActivity(), pipParams)
             isEnteringPiPMode = true
         }
 
@@ -1384,8 +1386,13 @@ class PlayerFragment : Fragment(R.layout.fragment_player), CustomPlayerCallback 
     }
 
     fun onUserLeaveHint() {
-        if (shouldStartPiP()) {
-            // PictureInPictureCompat.enterPictureInPictureMode(requireActivity(), pipParams)
+        val shouldPauseOnMinimize = PreferenceHelper.getBoolean(PreferenceKeys.PAUSE_ON_MINIMIZE, true)
+        if (shouldPauseOnMinimize) {
+            playerController.pause()
+        }
+
+        if (!shouldPauseOnMinimize && shouldStartPiP()) {
+            PictureInPictureCompat.enterPictureInPictureMode(requireActivity(), pipParams)
         }
     }
 
