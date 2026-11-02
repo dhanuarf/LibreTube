@@ -175,8 +175,11 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
         }
 
         binding.channelGroups.setOnCheckedStateChangeListener { group, _ ->
-            selectedFilterGroup =
-                group.children.indexOfFirst { it.id == group.checkedChipId } - 1 // 0th index is "all" button
+            val selectedChip = group.children.firstOrNull() { it.id == group.checkedChipId }
+            selectedChip?.let {
+                if (it.id == View.NO_ID || it.tag == null) return@setOnCheckedStateChangeListener
+                selectedFilterGroup = it.tag as Int
+            }
 
             lifecycleScope.launch {
                 showFeed(restoreScrollState = false)
@@ -284,12 +287,14 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
         val groups = viewModel.groups.value.orEmpty()
 
         binding.chipAll.isChecked = selectedFilterGroup == FILTER_GROUP_ALL
+        binding.chipAll.tag = FILTER_GROUP_ALL
         binding.chipAll.setOnLongClickListener {
             lifecycleScope.launch { playByGroup(FILTER_GROUP_ALL) }
             true
         }
 
         binding.chipUngrouped.isChecked = selectedFilterGroup == FILTER_GROUP_UNGROUPED
+        binding.chipUngrouped.tag = FILTER_GROUP_UNGROUPED
         binding.chipUngrouped.setOnLongClickListener {
             lifecycleScope.launch { playByGroup(FILTER_GROUP_UNGROUPED) }
             true
