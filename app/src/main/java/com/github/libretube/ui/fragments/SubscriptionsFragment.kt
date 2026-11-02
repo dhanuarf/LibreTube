@@ -155,10 +155,14 @@ class SubscriptionsFragment : DynamicLayoutManagerFragment(R.layout.fragment_sub
                     FILTER_GROUP_UNGROUPED -> viewModel.subscriptions.value?.let { subscriptions ->
                         FeedRefresh.OnlySome(subscriptions.map { it.url.toID() })
                     } ?: FeedRefresh.All // fallback if subscriptions weren't loaded yet
-                    else -> FeedRefresh.OnlySome(
-                        viewModel.groups.value?.getOrNull(selectedFilterGroup)
-                            ?.channels.orEmpty()
-                    )
+                    else -> {
+                        // UNSUBBED CHANNEL STILL STAY IN CHANNEL GROUP DATA,
+                        // MOMENTARY FIX FOR REFRESHING FEED
+                        val chanGroup = viewModel.groups.value?.getOrNull(selectedFilterGroup)?.channels.orEmpty()
+                        val subs = viewModel.subscriptions.value.orEmpty()
+                        val channels = subs.map { it.url.toID() }.filter { chanGroup.contains(it) }
+                        FeedRefresh.OnlySome(channels)
+                    }
                 }
             )
         }
