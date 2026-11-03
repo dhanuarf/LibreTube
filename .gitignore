@@ -15,6 +15,7 @@ captures/
 *.apk
 output.json
 app/release/
+app/kuuh/
 
 # IntelliJ
 *.iml
@@ -31,3 +32,4 @@ google-services.json
 # Android Profiling
 *.hprof
 .DS_Store
+
