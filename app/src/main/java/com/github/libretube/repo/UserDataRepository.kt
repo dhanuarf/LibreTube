@@ -50,13 +50,14 @@ interface UserDataRepository {
     suspend fun createPlaylist(playlistName: String): String?
     suspend fun deletePlaylist(playlistId: String): Boolean
 
-    suspend fun createSubscriptionGroup(name: String): String
+    suspend fun createSubscriptionGroup(group: SubscriptionGroup): String
     suspend fun renameSubscriptionGroup(subscriptionGroupId: String, newName: String)
     suspend fun deleteSubscriptionGroup(subscriptionGroupId: String)
     suspend fun getSubscriptionGroup(subscriptionGroupId: String): SubscriptionGroup
     suspend fun getSubscriptionGroups(): List<SubscriptionGroup>
     suspend fun addToSubscriptionGroup(subscriptionGroupId: String, channelId: String)
     suspend fun removeFromSubscriptionGroup(subscriptionGroupId: String, channelId: String)
+    open suspend fun updateAllSubscriptionsGroup(groups: List<SubscriptionGroup>){}
 
     suspend fun addToWatchHistory(watchHistoryEntry: WatchHistoryEntry)
     suspend fun updateWatchHistoryEntry(metadata: WatchHistoryEntryMetadata)

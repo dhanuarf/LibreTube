@@ -11,6 +11,7 @@ import com.github.libretube.databinding.DialogSubscriptionGroupsBinding
 import com.github.libretube.db.obj.SubscriptionGroup
 import com.github.libretube.extensions.move
 import com.github.libretube.extensions.setOnDraggedListener
+import com.github.libretube.repo.UserDataRepositoryHelper
 import com.github.libretube.ui.adapters.SubscriptionGroupsAdapter
 import com.github.libretube.ui.models.SubscriptionsViewModel
 import com.github.libretube.ui.sheets.AddChannelToGroupSheet.Companion.applyGroupsDiff
@@ -47,6 +48,7 @@ class ChannelGroupsSheet : ExpandedBottomSheet(R.layout.dialog_subscription_grou
             viewModel.groups.value = adapter.groups
             viewModel.groups.value?.forEachIndexed { index, group -> group.index = index }
             CoroutineScope(Dispatchers.IO).launch {
+                UserDataRepositoryHelper.userDataRepository.updateAllSubscriptionsGroup(viewModel.groups.value.orEmpty().toList())
                 applyGroupsDiff(groupsBeforeChange, adapter.groups)
             }
             dismiss()

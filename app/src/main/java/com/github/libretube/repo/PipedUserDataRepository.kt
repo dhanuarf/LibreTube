@@ -18,6 +18,7 @@ import com.github.libretube.api.obj.Token
 import com.github.libretube.api.obj.WatchHistoryEntry
 import com.github.libretube.api.obj.WatchHistoryEntryMetadata
 import com.github.libretube.db.obj.PlaylistBookmark
+import com.github.libretube.db.obj.SubscriptionGroup
 import com.github.libretube.enums.WatchHistoryStatus
 import com.github.libretube.extensions.toID
 import com.github.libretube.obj.PipedImportPlaylist
@@ -156,8 +157,8 @@ class PipedUserDataRepository : UserDataRepository {
     // Piped doesn't support any of the functionalities below, so we handle them locally instead
     //
 
-    override suspend fun createSubscriptionGroup(name: String) =
-        localRepositoryDelegate.createSubscriptionGroup(name)
+    override suspend fun createSubscriptionGroup(group: SubscriptionGroup) =
+        localRepositoryDelegate.createSubscriptionGroup(group)
 
     override suspend fun renameSubscriptionGroup(
         subscriptionGroupId: String,

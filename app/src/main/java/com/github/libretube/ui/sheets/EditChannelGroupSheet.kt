@@ -13,8 +13,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.libretube.R
 import com.github.libretube.api.obj.Subscription
 import com.github.libretube.databinding.DialogEditChannelGroupBinding
+import com.github.libretube.db.DatabaseHelper
+import com.github.libretube.db.DatabaseHolder
 import com.github.libretube.db.obj.SubscriptionGroup
 import com.github.libretube.extensions.toastFromMainDispatcher
+import com.github.libretube.repo.LocalUserDataRepository
 import com.github.libretube.repo.UserDataRepositoryHelper
 import com.github.libretube.ui.adapters.SubscriptionGroupChannelsAdapter
 import com.github.libretube.ui.models.SubscriptionsViewModel
@@ -96,7 +99,7 @@ class EditChannelGroupSheet : ExpandedBottomSheet(R.layout.dialog_edit_channel_g
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 group.id =
-                    UserDataRepositoryHelper.userDataRepository.createSubscriptionGroup(group.name)
+                    UserDataRepositoryHelper.userDataRepository.createSubscriptionGroup(group)
                 applyChannelGroupsDiff(group.id, group.channels, channelsInGroup)
                 group.channels = channelsInGroup
 

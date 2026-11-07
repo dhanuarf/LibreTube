@@ -211,12 +211,12 @@ class LibreTubeSyncServerUserDataRepository : UserDataRepository {
         return runCatching { api.deletePlaylist(playlistId) }.isSuccess
     }
 
-    override suspend fun createSubscriptionGroup(name: String): String {
+    override suspend fun createSubscriptionGroup(group: SubscriptionGroup): String {
         return tryHttpOrRaiseError {
             api.createSubscriptionGroup(
                 com.github.libretube.api.ltsync.obj.SubscriptionGroup(
                     "",
-                    name
+                    group.name
                 )
             ).id
         }

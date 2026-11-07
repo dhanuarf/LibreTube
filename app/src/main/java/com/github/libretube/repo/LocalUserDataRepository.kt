@@ -176,12 +176,16 @@ class LocalUserDataRepository : UserDataRepository {
         })
     }
 
-    override suspend fun createSubscriptionGroup(name: String): String {
+    override suspend fun updateAllSubscriptionsGroup(groups: List<SubscriptionGroup>) {
+        Database.subscriptionGroupsDao().updateAll(groups)
+    }
+
+    override suspend fun createSubscriptionGroup(group: SubscriptionGroup): String {
         Database.subscriptionGroupsDao()
-            .createGroup(SubscriptionGroup(name = name))
+            .createGroup(group)
 
         // name is the ID in our database modeling
-        return name
+        return group.name
     }
 
     override suspend fun renameSubscriptionGroup(

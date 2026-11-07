@@ -27,6 +27,9 @@ interface SubscriptionGroupsDao {
     @Update
     suspend fun updateGroup(subscriptionGroup: SubscriptionGroup)
 
+    @Update
+    suspend fun updateAll(groups: List<SubscriptionGroup>)
+
     @Query("DELETE FROM subscriptionGroups WHERE name = :name")
     suspend fun deleteGroup(name: String)
 }

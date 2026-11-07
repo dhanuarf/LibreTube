@@ -52,12 +52,13 @@ class AddChannelToGroupSheet : ExpandedBottomSheet(R.layout.dialog_add_channel_t
 
             val modifiableGroups = initialSubscriptionGroups.toMutableList()
             withContext(Dispatchers.Main) {
-                addToGroupAdapter.submitList(initialSubscriptionGroups)
+                addToGroupAdapter.submitList(modifiableGroups)
 
                 binding.okay.setOnClickListener {
                     requireDialog().hide()
 
                     lifecycleScope.launch(Dispatchers.IO) {
+                        UserDataRepositoryHelper.userDataRepository.updateAllSubscriptionsGroup(modifiableGroups.toList())
                         applyGroupsDiff(initialSubscriptionGroups, modifiableGroups.toList())
 
                         viewModel.groups.postValue(modifiableGroups)
