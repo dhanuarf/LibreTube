@@ -139,7 +139,7 @@ class ChannelFragment : Fragment(R.layout.fragment_channel) {
             response.name.orEmpty(),
             response.avatarUrl,
             response.verified,
-            binding.notificationBell,
+            binding.notificationBell
         ) {
             isSubscribed = it
         }

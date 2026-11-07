@@ -1,5 +1,6 @@
 package com.github.libretube.ui.extensions
 
+import android.widget.TextView
 import androidx.core.view.isVisible
 import com.github.libretube.R
 import com.github.libretube.api.SubscriptionHelper
@@ -14,14 +15,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-fun MaterialButton.setupSubscriptionButton(
+fun TextView.setupSubscriptionButton(
     channelId: String?,
     channelName: String,
     channelAvatar: String?,
     channelVerified: Boolean,
     notificationBell: MaterialButton? = null,
     isSubscribed: Boolean? = null,
-    onIsSubscribedChange: (Boolean) -> Unit = {},
+    onIsSubscribedChange: (Boolean) -> Unit = {}
 ) {
     if (channelId == null) return
 
@@ -32,8 +33,7 @@ fun MaterialButton.setupSubscriptionButton(
     fun updateUIStateAndNotifyObservers() {
         onIsSubscribedChange(subscribed)
 
-        isChecked = subscribed
-        text =
+        this@setupSubscriptionButton.text =
             if (subscribed) context.getString(R.string.unsubscribe)
             else context.getString(R.string.subscribe)
 
@@ -74,18 +74,20 @@ fun MaterialButton.setupSubscriptionButton(
     }
 
     setOnClickListener {
-        if (subscribed) {
-            Snackbar
-                .make(
-                    context,
-                    rootView,
-                    context.getString(R.string.unsubscribe_snackbar_message, channelName),
-                    1000
-                )
-                .setAction(R.string.undo, {
-                    setSubscriptionState(true)
-                }).show()
+        CoroutineScope(Dispatchers.Main).launch {
+            if (subscribed) {
+                Snackbar
+                    .make(
+                        context,
+                        rootView,
+                        context.getString(R.string.unsubscribe_snackbar_message, channelName),
+                        1000
+                    )
+                    .setAction(R.string.undo, {
+                        setSubscriptionState(true)
+                    }).show()
+            }
+            setSubscriptionState(!subscribed)
         }
-        setSubscriptionState(!subscribed)
     }
 }

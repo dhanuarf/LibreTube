@@ -18,7 +18,7 @@ import com.github.libretube.ui.extensions.setupSubscriptionButton
 import com.github.libretube.ui.sheets.ChannelOptionsBottomSheet
 import com.github.libretube.ui.viewholders.SubscriptionChannelViewHolder
 
-class SubscriptionChannelAdapter(private val rootView: View) :
+class SubscriptionChannelAdapter :
     ListAdapter<Subscription, SubscriptionChannelViewHolder>(DiffUtilItemCallback()) {
 
     // Track recently unsubscribed channels to preserve their unsubscribed state when
@@ -65,7 +65,7 @@ class SubscriptionChannelAdapter(private val rootView: View) :
                 subscription.avatar,
                 subscription.verified,
                 notificationBell,
-                !isRecentlyUnsubscribed,
+                !isRecentlyUnsubscribed
             ) { isSubscribed ->
                 when (isSubscribed) {
                     true -> if (isRecentlyUnsubscribed) recentlyUnsubscribedList.remove(channelId)

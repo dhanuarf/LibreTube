@@ -176,7 +176,7 @@ class PlayingQueueSheet : ExpandedBottomSheet(R.layout.queue_bottom_sheet) {
                                         videoId = videoId,
                                         finished = true,
                                         positionMillis = duration * 1000,
-                                        addedDate = System.currentTimeMillis()
+                                        addedDate = Clock.System.now().toEpochMilliseconds()
                                     )
                                 )
                                 runCatching {

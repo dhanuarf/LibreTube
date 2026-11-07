@@ -176,7 +176,7 @@ class SearchResultsAdapter(
                 item.url.toID(),
                 item.name.orEmpty(),
                 item.thumbnail,
-                item.uploaderVerified ?: false,
+                item.uploaderVerified ?: false
             ) {
                 subscribed = it
             }

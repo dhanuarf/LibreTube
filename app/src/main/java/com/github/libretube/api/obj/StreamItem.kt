@@ -10,6 +10,7 @@ import com.github.libretube.extensions.toLocalDate
 import com.github.libretube.helpers.ProxyHelper
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import kotlin.time.Clock
 
 @Serializable
 @Parcelize
@@ -75,7 +76,7 @@ data class StreamItem(
     fun toWatchHistoryEntry(positionMillis: Long?) = WatchHistoryEntry(
         metadata = WatchHistoryEntryMetadata(
             videoId = url!!.toID(),
-            addedDate = System.currentTimeMillis(),
+            addedDate = Clock.System.now().toEpochMilliseconds(),
             finished = positionMillis?.let { DatabaseHelper.isVideoWatched(it, duration) } ?: false,
             positionMillis = positionMillis
         ),

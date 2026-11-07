@@ -27,9 +27,7 @@ import kotlinx.coroutines.launch
 class SubscriptionsBottomSheet : ExpandedBottomSheet(R.layout.sheet_subscriptions) {
     private var _binding: SheetSubscriptionsBinding? = null
     private val binding get() = _binding!!
-    private val adapter by lazy {
-        SubscriptionChannelAdapter(binding.root)
-    }
+    private val adapter = SubscriptionChannelAdapter()
 
     private val selectedChannelGroup
         get() = PreferenceHelper.getInt(PreferenceKeys.SELECTED_CHANNEL_GROUP, -1)
