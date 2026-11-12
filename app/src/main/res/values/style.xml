@@ -77,10 +77,10 @@
 
     <style name="PlayerControlBottom">
 
-        <item name="android:paddingHorizontal">9dp</item>
+        <item name="android:paddingHorizontal">10dp</item>
         <item name="android:paddingVertical">5dp</item>
-        <item name="android:layout_height">34dp</item>
-        <item name="android:layout_width">45dp</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:layout_width">41dp</item>
         <item name="android:scaleType">fitCenter</item>
         <item name="android:layout_gravity">center</item>
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
@@ -100,8 +100,8 @@
 
         <item name="android:paddingHorizontal">10dp</item>
         <item name="android:paddingVertical">2dp</item>
-        <item name="android:layout_height">36dp</item>
-        <item name="android:layout_width">42dp</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:layout_width">41dp</item>
         <item name="android:scaleType">fitCenter</item>
         <item name="android:layout_gravity">center</item>
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
@@ -125,7 +125,7 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="paddingStart">5dp</item>
         <item name="paddingEnd">5dp</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">13sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@android:color/white</item>
     </style>

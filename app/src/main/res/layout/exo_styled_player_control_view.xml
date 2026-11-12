@@ -37,8 +37,8 @@
                 <ImageView
                     android:id="@+id/lock_player"
                     style="@style/PlayerControlTop"
-                    android:scaleX="0.8"
-                    android:scaleY="0.8"
+                    android:scaleX="0.75"
+                    android:scaleY="0.75"
                     android:src="@drawable/ic_unlocked" />
 
             </LinearLayout>
@@ -66,13 +66,11 @@
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/autoPlay"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_marginEnd="2dp"
-                    android:scaleX="0.7"
-                    android:scaleY="0.7"
+                    android:layout_height="33dp"
+                    android:scaleX="0.6"
+                    android:scaleY="0.6"
                     android:thumb="@drawable/player_switch_thumb"
                     android:tooltipText="@string/player_autoplay"
-                    android:padding="6dp"
                     app:thumbTint="@android:color/white"
                     app:track="@drawable/player_switch_track"
                     app:trackTint="#88ffffff" />
@@ -82,14 +80,17 @@
                     style="@style/PlayerControlTop"
                     android:layout_marginEnd="2dp"
                     android:src="@drawable/ic_dearrow"
+                    android:scaleX="0.8"
+                    android:scaleY="0.8"
                     android:tooltipText="@string/contribute_to_dearrow"
                     android:visibility="gone"
-                    app:tint="@android:color/white" />
+                    app:tint="@android:color/white"
+                    tools:visibility="visible"
+                    />
 
                 <ImageButton
                     android:id="@+id/sb_submit"
                     style="@style/PlayerControlTop"
-                    android:layout_marginEnd="2dp"
                     android:src="@drawable/ic_upload_segment"
                     android:tooltipText="@string/sb_create_segment"
                     android:visibility="gone"
@@ -98,7 +99,6 @@
                 <ImageButton
                     android:id="@+id/sb_toggle"
                     style="@style/PlayerControlTop"
-                    android:layout_marginEnd="2dp"
                     android:src="@drawable/ic_sb_enabled"
                     android:tooltipText="@string/tooltip_sponsorblock"
                     android:visibility="gone"
@@ -107,7 +107,6 @@
                 <ImageButton
                     android:id="@+id/queue_toggle"
                     style="@style/PlayerControlTop"
-                    android:layout_marginEnd="2dp"
                     android:src="@drawable/ic_queue"
                     android:tooltipText="@string/queue"
                     app:tint="@android:color/white" />
@@ -117,6 +116,8 @@
                     style="@style/PlayerControlTop"
                     android:src="@drawable/ic_player_settings"
                     android:tooltipText="@string/tooltip_options"
+                    android:scaleX="0.8"
+                    android:scaleY="0.8"
                     app:tint="@android:color/white" />
 
             </LinearLayout>
@@ -188,9 +189,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:translationY="30dp"
+            android:translationY="0dp"
             android:translationZ="1dp"
-            android:visibility="gone">
+            android:visibility="gone"
+            tools:visibility="visible"
+            >
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/seekbar_preview_image"
@@ -230,8 +233,34 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/bottom_bar_progress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:paddingHorizontal="5dp"
+            android:orientation="horizontal">
+
+            <com.github.libretube.ui.views.ChapterTimeBar
+                android:id="@+id/exo_progress"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:bar_height="2dp"
+                app:scrubber_drawable="@drawable/player_timebar_scrubber"
+                app:played_color="?attr/colorPrimary"
+                app:buffered_color="#88FFFFFF"
+                app:unplayed_color="#33FFFFFF"
+                app:scrubber_color="?attr/colorPrimary"
+                app:scrubber_dragged_size="0dp"
+                app:scrubber_enabled_size="0dp"
+                app:touch_target_height="38dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bottom_bar_controls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-8dp"
+            android:paddingBottom="4dp"
             android:gravity="center_vertical"
             android:baselineAligned="false"
             android:paddingHorizontal="5dp">
@@ -241,7 +270,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp">
-
                 <TextView
                     android:id="@+id/position"
                     style="@style/TimeString"
@@ -250,9 +278,8 @@
 
                 <TextView
                     style="@style/TimeString"
-                    android:text="  •  "
+                    android:text=" / "
                     tools:ignore="HardcodedText" />
-
                 <TextView
                     android:id="@+id/duration"
                     style="@style/TimeString"
@@ -326,27 +353,6 @@
             </LinearLayout>
 
         </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/progress_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginHorizontal="10dp">
-
-            <com.github.libretube.ui.views.ChapterTimeBar
-                android:id="@+id/exo_progress"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:bar_height="4dp"
-                app:played_color="?attr/colorPrimary"
-                app:scrubber_color="?attr/colorPrimary"
-                app:scrubber_dragged_size="16dp"
-                app:scrubber_enabled_size="0dp"
-                app:touch_target_height="34dp" />
-
-        </LinearLayout>
-
     </LinearLayout>
 
 </merge>

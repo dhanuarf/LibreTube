@@ -4,7 +4,7 @@
     <color name="duration_text_color">#EEFFFFFF</color>
     <color name="shortcut_color">#0061A6</color>
     <color name="splash_screen_icon_color">#222</color>
-    <color name="bg_player_control_gradient_start">#77000000</color>
+    <color name="bg_player_control_gradient_start">#80000000</color>
     <color name="bg_player_control_gradient_center">#4f000000</color>
     <color name="bg_player_control_gradient_end">#00000000</color>
 

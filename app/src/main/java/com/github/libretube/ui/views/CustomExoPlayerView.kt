@@ -1182,7 +1182,7 @@ class CustomExoPlayerView(
      */
     fun updateMarginsByFullscreenMode() {
         // add a larger bottom margin to the time bar in landscape mode
-        binding.exoProgress.updateLayoutParams<MarginLayoutParams> {
+        binding.bottomBarControls.updateLayoutParams<MarginLayoutParams> {
             bottomMargin = (if (isFullscreen()) 20f else 0f).dpToPx()
         }
 
