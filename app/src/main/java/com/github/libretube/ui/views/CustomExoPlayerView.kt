@@ -408,25 +408,10 @@ class CustomExoPlayerView(
 
         // locking the player
         binding.lockPlayer.setOnClickListener {
-            // change the locked/unlocked icon
-            val icon = if (!isPlayerLocked) R.drawable.ic_locked else R.drawable.ic_unlocked
-            val tooltip = if (!isPlayerLocked) {
-                R.string.tooltip_unlocked
-            } else {
-                R.string.tooltip_locked
-            }
-
-            binding.lockPlayer.setImageResource(icon)
-            TooltipCompat.setTooltipText(binding.lockPlayer, context.getString(tooltip))
-
-            // show/hide all the controls
-            lockPlayer(isPlayerLocked)
-
-            // change locked status
-            isPlayerLocked = !isPlayerLocked
-
+            lockPlayer(!isPlayerLocked)
             if (isFullscreen()) toggleSystemBars(!isPlayerLocked)
         }
+        updateLockButton(isFullscreen())
 
         updateCurrentPosition()
     }
@@ -780,33 +765,30 @@ class CustomExoPlayerView(
 
     // lock the player
     private fun lockPlayer(isLocked: Boolean) {
+        isPlayerLocked = isLocked
+        val icon = if (isPlayerLocked) R.drawable.ic_locked else R.drawable.ic_unlocked
+        val tooltip = if (isPlayerLocked) {
+            R.string.tooltip_unlocked
+        } else {
+            R.string.tooltip_locked
+        }
+        binding.lockPlayer.setImageResource(icon)
+        TooltipCompat.setTooltipText(binding.lockPlayer, context.getString(tooltip))
+
         // isLocked is the current (old) state of the player lock
-        binding.exoTopBarRight.isVisible = isLocked
-        binding.exoCenterControls.isVisible = isLocked
-        binding.bottomBar.isVisible = isLocked
-        binding.closeImageButton.isVisible = isLocked
-        binding.exoTitle.isVisible = isLocked
-        binding.playPauseBTN.isVisible = isLocked
+        binding.exoTopBarRight.isVisible = !isLocked
+        binding.exoCenterControls.isVisible = !isLocked
+        binding.bottomBar.isVisible = !isLocked
+        binding.closeImageButton.isVisible = !isLocked
+        binding.exoTitle.isVisible = !isLocked
+        binding.playPauseBTN.isVisible = !isLocked
 
         if (!PlayerHelper.doubleTapToSeek) {
-            binding.seekButtonRewind.rewindBTN.isVisible = isLocked
-            binding.seekButtonForward.forwardBTN.isVisible = isLocked
+            binding.seekButtonRewind.rewindBTN.isVisible = !isLocked
+            binding.seekButtonForward.forwardBTN.isVisible = !isLocked
         }
 
-        // hide the dimming background overlay if locked
-        backgroundBinding.exoControlsBackground.setBackgroundColor(
-            if (isLocked) {
-                ContextCompat.getColor(
-                    context,
-                    androidx.media3.ui.R.color.exo_black_opacity_60
-                )
-            } else {
-                Color.TRANSPARENT
-            }
-        )
-
-        // disable tap and swipe gesture if the player is locked
-        playerGestureController.areControlsLocked = !isLocked
+        playerGestureController.areControlsLocked = isLocked
     }
 
     private fun rewind() {
@@ -1271,6 +1253,11 @@ class CustomExoPlayerView(
         }
     }
 
+    private fun updateLockButton(isFullscreen: Boolean) {
+        binding.lockPlayer.isGone = !isFullscreen
+        if (isPlayerLocked && !isFullscreen) lockPlayer(false)
+    }
+
     override fun onSingleTapConfirmed(areControlsLocked: Boolean) {
         if (areControlsLocked) {
             // keep showing the 'locked' icon
@@ -1418,6 +1405,7 @@ class CustomExoPlayerView(
         }
 
         updateMarginsByFullscreenMode()
+        updateLockButton(isFullscreen())
     }
 
     /**
