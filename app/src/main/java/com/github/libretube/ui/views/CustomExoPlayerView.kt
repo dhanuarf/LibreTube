@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,12 +14,8 @@ import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.Window
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.appcompat.widget.TooltipCompat
 import androidx.core.animation.doOnEnd
-import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.os.postDelayed
 import androidx.core.view.WindowInsetsCompat
@@ -30,7 +25,6 @@ import androidx.core.view.isVisible
 import androidx.core.view.marginStart
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
-import androidx.fragment.app.findFragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.media3.common.C
@@ -74,6 +68,7 @@ import com.github.libretube.ui.base.BaseActivity
 import com.github.libretube.ui.controllers.FullscreenGestureAnimationController
 import com.github.libretube.ui.dialogs.SubmitDeArrowDialog
 import com.github.libretube.ui.dialogs.SubmitSegmentDialog
+import com.github.libretube.ui.extensions.animateVisibility
 import com.github.libretube.ui.extensions.toggleSystemBars
 import com.github.libretube.ui.interfaces.CustomPlayerCallback
 import com.github.libretube.ui.interfaces.PlayerGestureOptions
@@ -119,6 +114,7 @@ class CustomExoPlayerView(
     private var scrubbingTimeBar = false
     private var lastDoublePressMs = 0L
     private var lastDoubleTapSeekDirection = 0
+    private var incrementalDoubleSeekCount = 0
 
     /**
      * Objects from the parent fragment
@@ -589,6 +585,7 @@ class CustomExoPlayerView(
         super.showController()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initRewindAndForward() {
         val seekIncrementText = (PlayerHelper.seekIncrement / 1000).toString()
         listOf(
@@ -597,7 +594,7 @@ class CustomExoPlayerView(
             binding.seekButtonForward.forwardTV,
             binding.seekButtonRewind.rewindTV
         ).forEach {
-            it.text = seekIncrementText
+            it.text =  "$seekIncrementText s"
         }
         binding.seekButtonForward.forwardBTN.setOnClickListener {
             player?.seekBy(PlayerHelper.seekIncrement)
@@ -796,17 +793,14 @@ class CustomExoPlayerView(
 
         // show the rewind button
         doubleTapOverlayBinding.apply {
-            animateSeeking(
-                rewindLayout.rewindBTN,
-                rewindLayout.rewindIV,
-                rewindLayout.rewindTV,
-                true
-            )
-
+            rewindLayout.rewindBTN.animateVisibility(VISIBLE)
             // start callback to hide the button
             runnableHandler.removeCallbacksAndMessages(HIDE_REWIND_BUTTON_TOKEN)
-            runnableHandler.postDelayed(700, HIDE_REWIND_BUTTON_TOKEN) {
-                rewindLayout.rewindBTN.isGone = true
+            runnableHandler.postDelayed(
+                DOUBLE_TAP_REPEAT_TIME_THRESHOLD_MILLIS,
+                HIDE_REWIND_BUTTON_TOKEN
+            ) {
+                rewindLayout.rewindBTN.animateVisibility(INVISIBLE)
             }
         }
     }
@@ -816,49 +810,16 @@ class CustomExoPlayerView(
 
         // show the forward button
         doubleTapOverlayBinding.apply {
-            animateSeeking(
-                forwardLayout.forwardBTN,
-                forwardLayout.forwardIV,
-                forwardLayout.forwardTV,
-                false
-            )
-
+            forwardLayout.forwardBTN.animateVisibility(VISIBLE)
             // start callback to hide the button
             runnableHandler.removeCallbacksAndMessages(HIDE_FORWARD_BUTTON_TOKEN)
-            runnableHandler.postDelayed(700, HIDE_FORWARD_BUTTON_TOKEN) {
-                forwardLayout.forwardBTN.isGone = true
+            runnableHandler.postDelayed(
+                DOUBLE_TAP_REPEAT_TIME_THRESHOLD_MILLIS,
+                HIDE_FORWARD_BUTTON_TOKEN
+            ) {
+                forwardLayout.forwardBTN.animateVisibility(INVISIBLE)
             }
         }
-    }
-
-    private fun animateSeeking(
-        container: FrameLayout,
-        imageView: ImageView,
-        textView: TextView,
-        isRewind: Boolean
-    ) {
-        container.isVisible = true
-        // the direction of the action
-        val direction = if (isRewind) -1 else 1
-
-        // clear previous animation
-        imageView.animate()
-            .rotation(0F)
-            .setDuration(0)
-            .start()
-
-        // start the rotate animation of the drawable
-        imageView.animate()
-            .rotation(direction * 30F)
-            .setDuration(ANIMATION_DURATION)
-            .withEndAction {
-                // reset the animation when finished
-                imageView.animate()
-                    .rotation(0F)
-                    .setDuration(ANIMATION_DURATION)
-                    .start()
-            }
-            .start()
     }
 
     private fun initializeGestureProgress() {
@@ -1259,6 +1220,9 @@ class CustomExoPlayerView(
     }
 
     override fun onSingleTapConfirmed(areControlsLocked: Boolean) {
+        // Dont show controls if incremental double tap seek is ongoing
+        if (incrementalDoubleSeekCount > 1) return
+
         if (areControlsLocked) {
             // keep showing the 'locked' icon
             toggleController(true)
@@ -1273,8 +1237,11 @@ class CustomExoPlayerView(
                 val now = SystemClock.uptimeMillis()
                 now - lastDoublePressMs < DOUBLE_TAP_REPEAT_TIME_THRESHOLD_MILLIS
             }
-        if (shouldIncrementSeek != true) return false
-        
+        if (shouldIncrementSeek != true) {
+            incrementalDoubleSeekCount = 0
+            return false
+        }
+
         if (lastDoubleTapSeekDirection > 0) onDoubleTapRightScreen()
         else if (lastDoubleTapSeekDirection < 0) onDoubleTapLeftScreen()   
         return true
@@ -1284,20 +1251,30 @@ class CustomExoPlayerView(
         player?.togglePlayPauseState()
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onDoubleTapLeftScreen() {
         if (!PlayerHelper.doubleTapToSeek) return
         rewind()
-        toggleController(true)
         lastDoublePressMs = SystemClock.uptimeMillis()
         lastDoubleTapSeekDirection = -1
+        val seekIncrementSeconds = (PlayerHelper.seekIncrement * (1 + incrementalDoubleSeekCount) / 1000L)
+        post {
+            doubleTapOverlayBinding.rewindLayout.rewindTV.text = "$seekIncrementSeconds s"
+        }
+        incrementalDoubleSeekCount++
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onDoubleTapRightScreen() {
         if (!PlayerHelper.doubleTapToSeek) return
         forward()
-        toggleController(true)
         lastDoublePressMs = SystemClock.uptimeMillis()
         lastDoubleTapSeekDirection = 1
+        val seekIncrementSeconds = (PlayerHelper.seekIncrement * (1 + incrementalDoubleSeekCount) / 1000L)
+        post {
+            doubleTapOverlayBinding.forwardLayout.forwardTV.text = "$seekIncrementSeconds s"
+        }
+        incrementalDoubleSeekCount++
     }
 
     override fun onSwipeLeftScreen(distanceY: Float, positionY: Float) {
@@ -1516,7 +1493,7 @@ class CustomExoPlayerView(
         /**
          * After a double click was processed, the user may use single clicks to trigger another double click.
          */
-        private const val DOUBLE_TAP_REPEAT_TIME_THRESHOLD_MILLIS = 700
+        private const val DOUBLE_TAP_REPEAT_TIME_THRESHOLD_MILLIS = 900L
 
         private const val SUBTITLE_BOTTOM_PADDING_FRACTION = 0.158f
         private const val ANIMATION_DURATION = 100L

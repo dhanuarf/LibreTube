@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:baselineAligned="false"
     android:layoutDirection="ltr">
 
@@ -20,7 +21,9 @@
         <include
             android:id="@+id/rewindLayout"
             layout="@layout/seek_button_rewind"
-            android:visibility="invisible" />
+            android:visibility="invisible"
+            tools:visibility="visible"
+            />
 
     </FrameLayout>
 
@@ -39,12 +42,15 @@
         android:clickable="false"
         android:clipChildren="false"
         android:clipToPadding="false"
+        android:foregroundGravity="center"
         android:focusable="false">
 
         <include
             android:id="@+id/forwardLayout"
             layout="@layout/seek_button_forward"
-            android:visibility="invisible" />
+            android:visibility="invisible"
+            tools:visibility="visible"
+            />
 
     </FrameLayout>
 

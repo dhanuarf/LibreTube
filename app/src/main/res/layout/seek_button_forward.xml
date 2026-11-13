@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/forwardBTN"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:padding="2dp"
-    android:layout_gravity="center">
+    android:paddingVertical="2dp"
+    android:paddingHorizontal="7dp"
+    android:background="@drawable/bg_seek_btn"
+    android:gravity="center"
+    android:layout_gravity="center"
+    android:orientation="horizontal">
 
     <ImageView
+        android:background="@null"
+        android:layout_marginHorizontal="0dp"
         android:id="@+id/forwardIV"
         style="@style/PlayerControlCenter"
-        android:src="@drawable/ic_forward"
+        android:src="@drawable/media3_icon_fast_forward"
         app:tint="@android:color/white" />
 
     <TextView
@@ -19,6 +26,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:textColor="@android:color/white"
-        android:translationZ="1dp" />
+        android:translationZ="1dp"
+        android:textSize="13sp"
+        tools:text="10 s"
+        />
 
-</FrameLayout>
+</LinearLayout>
