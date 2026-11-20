@@ -2,18 +2,16 @@ package com.github.libretube.ui.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.github.libretube.databinding.BottomSheetItemBinding
 import com.github.libretube.obj.bottomsheetitem.BottomSheetItem
-import com.github.libretube.ui.adapters.callbacks.DiffUtilItemCallback
 import com.github.libretube.ui.extensions.setDrawables
 import com.github.libretube.ui.viewholders.BottomSheetViewHolder
 
 class BottomSheetAdapter(
     private val listener: (index: Int) -> Unit
-) : ListAdapter<BottomSheetItem, BottomSheetViewHolder>(
-    DiffUtilItemCallback()
-) {
+) : RecyclerView.Adapter<BottomSheetViewHolder>() {
+    private var currentList = emptyList<BottomSheetItem>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BottomSheetViewHolder {
         val binding = BottomSheetItemBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -24,7 +22,7 @@ class BottomSheetAdapter(
     }
 
     override fun onBindViewHolder(holder: BottomSheetViewHolder, position: Int) {
-        val item = getItem(position)!!
+        val item = currentList[position]
         holder.binding.root.apply {
             val current = item.getCurrent()
             val title = item.title.getText(context)
@@ -37,5 +35,14 @@ class BottomSheetAdapter(
                 listener.invoke(position)
             }
         }
+    }
+
+    override fun getItemCount(): Int {
+        return currentList.size
+    }
+
+    fun submitList(list: List<BottomSheetItem>) {
+        currentList = list
+        notifyItemRangeChanged(0, currentList.size)
     }
 }
